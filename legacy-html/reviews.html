@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- libraries CSS -->
+    <link rel="stylesheet" href="assets/icon/flaticon_glamer.css">
+    <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/vendor/splide/splide.min.css">
+    <link rel="stylesheet" href="assets/vendor/swiper/swiper-bundle.min.css">
+    <link rel="stylesheet" href="assets/vendor/slim-select/slimselect.css">
+    <link rel="stylesheet" href="assets/vendor/animate-wow/animate.min.css">
+
+    <!-- custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="preloader" id="preloader">
+        <div class="loader"></div>
+    </div>
+
+
+    <!-- SIDEBAR SECTION START -->
+    <div class="ul-sidebar">
+        <!-- header -->
+        <div class="ul-sidebar-header">
+            <div class="ul-sidebar-header-logo">
+                <a href="index.html">
+                    <img src="assets/img/logo.svg" alt="logo" class="logo">
+                </a>
+            </div>
+            <!-- sidebar closer -->
+            <button class="ul-sidebar-closer"><i class="flaticon-close"></i></button>
+        </div>
+
+        <div class="ul-sidebar-header-nav-wrapper d-block d-lg-none"></div>
+
+        <div class="ul-sidebar-about d-none d-lg-block">
+            <span class="title">About glamer</span>
+            <p class="mb-0">Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra, velit viverra lacinia consequat, ipsum odio mollis dolor, nec facilisis arcu arcu ultricies sapien. Quisque ut dapibus nunc. Vivamus sit amet efficitur velit. Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra velit.</p>
+        </div>
+
+
+        <!-- product slider -->
+        <div class="ul-sidebar-products-wrapper d-none d-lg-flex">
+            <div class="ul-sidebar-products-slider swiper">
+                <div class="swiper-wrapper">
+                    <!-- product card -->
+                    <div class="swiper-slide">
+                        <div class="ul-product">
+                            <div class="ul-product-heading">
+                                <span class="ul-product-price">$99.00</span>
+                                <span class="ul-product-discount-tag">25% Off</span>
+                            </div>
+
+                            <div class="ul-product-img">
+                                <img src="assets/img/product-img-1.jpg" alt="Product Image">
+
+                                <div class="ul-product-actions">
+                                    <button><i class="flaticon-shopping-bag"></i></button>
+                                    <a href="#"><i class="flaticon-hide"></i></a>
+                                    <button><i class="flaticon-heart"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="ul-product-txt">
+                                <h4 class="ul-product-title"><a href="shop-details.html">Orange Airsuit</a></h4>
+                                <h5 class="ul-product-category"><a href="shop.html">Fashion Bag</a></h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- product card -->
+                    <div class="swiper-slide">
+                        <div class="ul-product">
+                            <div class="ul-product-heading">
+                                <span class="ul-product-price">$99.00</span>
+                                <span class="ul-product-discount-tag">25% Off</span>
+                            </div>
+
+                            <div class="ul-product-img">
+                                <img src="assets/img/product-img-2.jpg" alt="Product Image">
+
+                                <div class="ul-product-actions">
+                                    <button><i class="flaticon-shopping-bag"></i></button>
+                                    <a href="#"><i class="flaticon-hide"></i></a>
+                                    <button><i class="flaticon-heart"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="ul-product-txt">
+                                <h4 class="ul-product-title"><a href="shop-details.html">Orange Airsuit</a></h4>
+                                <h5 class="ul-product-category"><a href="shop.html">Fashion Bag</a></h5>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- product card -->
+                    <div class="swiper-slide">
+                        <div class="ul-product">
+                            <div class="ul-product-heading">
+                                <span class="ul-product-price">$99.00</span>
+                                <span class="ul-product-discount-tag">25% Off</span>
+                            </div>
+
+                            <div class="ul-product-img">
+                                <img src="assets/img/product-img-2.jpg" alt="Product Image">
+
+                                <div class="ul-product-actions">
+                                    <button><i class="flaticon-shopping-bag"></i></button>
+                                    <a href="#"><i class="flaticon-hide"></i></a>
+                                    <button><i class="flaticon-heart"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="ul-product-txt">
+                                <h4 class="ul-product-title"><a href="shop-details.html">Orange Airsuit</a></h4>
+                                <h5 class="ul-product-category"><a href="shop.html">Fashion Bag</a></h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ul-sidebar-products-slider-nav flex-shrink-0">
+                <button class="prev"><i class="flaticon-left-arrow"></i></button>
+                <button class="next"><i class="flaticon-arrow-point-to-right"></i></button>
+            </div>
+        </div>
+
+        <div class="ul-sidebar-about d-none d-lg-block">
+            <p class="mb-0">Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra, velit viverra lacinia consequat, ipsum odio mollis dolor, nec facilisis arcu arcu ultricies sapien. Quisque ut dapibus nunc. Vivamus sit amet efficitur velit. Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra velit.</p>
+        </div>
+
+        <!-- sidebar footer -->
+        <div class="ul-sidebar-footer">
+            <span class="ul-sidebar-footer-title">Follow us</span>
+
+            <div class="ul-sidebar-footer-social">
+                <a href="#"><i class="flaticon-facebook-app-symbol"></i></a>
+                <a href="#"><i class="flaticon-twitter"></i></a>
+                <a href="#"><i class="flaticon-instagram"></i></a>
+                <a href="#"><i class="flaticon-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+    <!-- SIDEBAR SECTION END -->
+
+    <div data-include="header"></div>
+
+    <main>
+        <!-- BREADCRUMB SECTION START -->
+        <div class="ul-container">
+            <div class="ul-breadcrumb">
+                <h2 class="ul-breadcrumb-title">Testimonial</h2>
+                <div class="ul-breadcrumb-nav">
+                    <a href="index.html"><i class="flaticon-home"></i> Home</a>
+                    <i class="flaticon-arrow-point-to-right"></i>
+                    <span class="current-page">Testimonial</span>
+                </div>
+            </div>
+        </div>
+        <!-- BREADCRUMB SECTION END -->
+
+
+        <!-- REVIEWS SECTION START -->
+        <section class="ul-reviews">
+            <div class="row row-cols-xl-4 row-cols-md-3 row-cols-2 row-cols-xxs-1 ul-bs-row">
+                <!-- single review -->
+                <div class="col">
+                    <div class="ul-review">
+                        <div class="ul-review-rating">
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star-3"></i>
+                        </div>
+                        <p class="ul-review-descr">Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.</p>
+                        <div class="ul-review-bottom">
+                            <div class="ul-review-reviewer">
+                                <div class="reviewer-image"><img src="assets/img/review-author-1.png" alt="reviewer image"></div>
+                                <div>
+                                    <h3 class="reviewer-name">Esther Howard</h3>
+                                    <span class="reviewer-role">Web Designer</span>
+                                </div>
+                            </div>
+
+                            <!-- icon -->
+                            <div class="ul-review-icon"><i class="flaticon-left"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- single review -->
+                <div class="col">
+                    <div class="ul-review">
+                        <div class="ul-review-rating">
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star-3"></i>
+                        </div>
+                        <p class="ul-review-descr">Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.</p>
+                        <div class="ul-review-bottom">
+                            <div class="ul-review-reviewer">
+                                <div class="reviewer-image"><img src="assets/img/review-author-2.png" alt="reviewer image"></div>
+                                <div>
+                                    <h3 class="reviewer-name">Wade Warren</h3>
+                                    <span class="reviewer-role">Marketing Coordinator</span>
+                                </div>
+                            </div>
+
+                            <!-- icon -->
+                            <div class="ul-review-icon"><i class="flaticon-left"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- single review -->
+                <div class="col">
+                    <div class="ul-review">
+                        <div class="ul-review-rating">
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star-3"></i>
+                        </div>
+                        <p class="ul-review-descr">Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.</p>
+                        <div class="ul-review-bottom">
+                            <div class="ul-review-reviewer">
+                                <div class="reviewer-image"><img src="assets/img/review-author-3.png" alt="reviewer image"></div>
+                                <div>
+                                    <h3 class="reviewer-name">Esther Howard</h3>
+                                    <span class="reviewer-role">Nursing Assistant</span>
+                                </div>
+                            </div>
+
+                            <!-- icon -->
+                            <div class="ul-review-icon"><i class="flaticon-left"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- single review -->
+                <div class="col">
+                    <div class="ul-review">
+                        <div class="ul-review-rating">
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star-3"></i>
+                        </div>
+                        <p class="ul-review-descr">Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.</p>
+                        <div class="ul-review-bottom">
+                            <div class="ul-review-reviewer">
+                                <div class="reviewer-image"><img src="assets/img/review-author-4.png" alt="reviewer image"></div>
+                                <div>
+                                    <h3 class="reviewer-name">John Doe</h3>
+                                    <span class="reviewer-role">Medical Assistant</span>
+                                </div>
+                            </div>
+
+                            <!-- icon -->
+                            <div class="ul-review-icon"><i class="flaticon-left"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- single review -->
+                <div class="col">
+                    <div class="ul-review">
+                        <div class="ul-review-rating">
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star-3"></i>
+                        </div>
+                        <p class="ul-review-descr">Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.</p>
+                        <div class="ul-review-bottom">
+                            <div class="ul-review-reviewer">
+                                <div class="reviewer-image"><img src="assets/img/review-author-2.png" alt="reviewer image"></div>
+                                <div>
+                                    <h3 class="reviewer-name">Leslie Alexander</h3>
+                                    <span class="reviewer-role">Medical Assistant</span>
+                                </div>
+                            </div>
+
+                            <!-- icon -->
+                            <div class="ul-review-icon"><i class="flaticon-left"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- single review -->
+                <div class="col">
+                    <div class="ul-review">
+                        <div class="ul-review-rating">
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star-3"></i>
+                        </div>
+                        <p class="ul-review-descr">Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.</p>
+                        <div class="ul-review-bottom">
+                            <div class="ul-review-reviewer">
+                                <div class="reviewer-image"><img src="assets/img/review-author-2.png" alt="reviewer image"></div>
+                                <div>
+                                    <h3 class="reviewer-name">Wade Warren</h3>
+                                    <span class="reviewer-role">Marketing Coordinator</span>
+                                </div>
+                            </div>
+
+                            <!-- icon -->
+                            <div class="ul-review-icon"><i class="flaticon-left"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- single review -->
+                <div class="col">
+                    <div class="ul-review">
+                        <div class="ul-review-rating">
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star-3"></i>
+                        </div>
+                        <p class="ul-review-descr">Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.</p>
+                        <div class="ul-review-bottom">
+                            <div class="ul-review-reviewer">
+                                <div class="reviewer-image"><img src="assets/img/review-author-3.png" alt="reviewer image"></div>
+                                <div>
+                                    <h3 class="reviewer-name">Esther Howard</h3>
+                                    <span class="reviewer-role">Nursing Assistant</span>
+                                </div>
+                            </div>
+
+                            <!-- icon -->
+                            <div class="ul-review-icon"><i class="flaticon-left"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- single review -->
+                <div class="col">
+                    <div class="ul-review">
+                        <div class="ul-review-rating">
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star"></i>
+                            <i class="flaticon-star-3"></i>
+                        </div>
+                        <p class="ul-review-descr">Praesent ut lacus a velit tincidunt aliquam a eget urna. Sed ullamcorper tristique nisl at pharetra turpis accumsan et etiam eu sollicitudin eros. In imperdiet accumsan.</p>
+                        <div class="ul-review-bottom">
+                            <div class="ul-review-reviewer">
+                                <div class="reviewer-image"><img src="assets/img/review-author-4.png" alt="reviewer image"></div>
+                                <div>
+                                    <h3 class="reviewer-name">John Doe</h3>
+                                    <span class="reviewer-role">Medical Assistant</span>
+                                </div>
+                            </div>
+
+                            <!-- icon -->
+                            <div class="ul-review-icon"><i class="flaticon-left"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- REVIEWS SECTION END -->
+    </main>
+
+    <div data-include="footer"></div>
+
+    <!-- libraries JS -->
+    <script src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="assets/vendor/splide/splide.min.js"></script>
+    <script src="assets/vendor/splide/splide-extension-auto-scroll.min.js"></script>
+    <script src="assets/vendor/swiper/swiper-bundle.min.js"></script>
+    <script src="assets/vendor/slim-select/slimselect.min.js"></script>
+    <script src="assets/vendor/animate-wow/wow.min.js"></script>
+    <script src="assets/vendor/splittype/index.min.js"></script>
+    <script src="assets/vendor/mixitup/mixitup.min.js"></script>
+    <script src="assets/vendor/fslightbox/fslightbox.js"></script>
+
+    <!-- custom JS -->
+    <script src="assets/js/layout.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+
+</html>

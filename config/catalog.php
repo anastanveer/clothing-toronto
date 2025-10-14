@@ -1,0 +1,130 @@
+<?php
+
+return [
+    'products' => [
+        'standard' => [
+            [
+                'title' => 'Orange Airsuit',
+                'category' => 'Fashion Bag',
+                'category_route' => 'shop',
+                'price' => '$99.00',
+                'discount' => '25% Off',
+                'image' => 'assets/img/product-img-1.jpg',
+            ],
+            [
+                'title' => 'Round Neck T-shirt',
+                'category' => 'Summer Wear',
+                'category_route' => 'shop',
+                'price' => '$89.00',
+                'discount' => '18% Off',
+                'image' => 'assets/img/product-img-2.jpg',
+            ],
+            [
+                'title' => 'Classic Denim Jacket',
+                'category' => 'Outerwear',
+                'category_route' => 'shop',
+                'price' => '$119.00',
+                'discount' => '15% Off',
+                'image' => 'assets/img/product-img-3.jpg',
+            ],
+            [
+                'title' => 'Leather Crossbody Bag',
+                'category' => 'Accessories',
+                'category_route' => 'shop',
+                'price' => '$129.00',
+                'discount' => '20% Off',
+                'image' => 'assets/img/product-img-4.jpg',
+            ],
+            [
+                'title' => 'Puffer Jacket',
+                'category' => 'Winter Wear',
+                'category_route' => 'shop',
+                'price' => '$149.00',
+                'discount' => '30% Off',
+                'image' => 'assets/img/product-img-5.jpg',
+            ],
+            [
+                'title' => 'Sporty Sneakers',
+                'category' => 'Footwear',
+                'category_route' => 'shop',
+                'price' => '$135.00',
+                'discount' => '22% Off',
+                'image' => 'assets/img/product-img-6.jpg',
+            ],
+        ],
+        'compact' => [
+            [
+                'title' => 'Orange Airsuit',
+                'category' => 'Fashion Bag',
+                'price' => '$99.00',
+                'image' => 'assets/img/product-img-sm-1.jpg',
+            ],
+            [
+                'title' => 'Round Neck T-shirt',
+                'category' => 'Summer Wear',
+                'price' => '$89.00',
+                'image' => 'assets/img/product-img-sm-2.jpg',
+            ],
+            [
+                'title' => 'Classic Denim Jacket',
+                'category' => 'Outerwear',
+                'price' => '$119.00',
+                'image' => 'assets/img/product-img-sm-3.jpg',
+            ],
+            [
+                'title' => 'Leather Crossbody Bag',
+                'category' => 'Accessories',
+                'price' => '$129.00',
+                'image' => 'assets/img/product-img-sm-4.jpg',
+            ],
+            [
+                'title' => 'Puffer Jacket',
+                'category' => 'Winter Wear',
+                'price' => '$149.00',
+                'image' => 'assets/img/product-img-sm-5.jpg',
+            ],
+            [
+                'title' => 'Sporty Sneakers',
+                'category' => 'Footwear',
+                'price' => '$135.00',
+                'image' => 'assets/img/product-img-sm-6.jpg',
+            ],
+            [
+                'title' => 'Relaxed Fit Hoodie',
+                'category' => 'Casual Wear',
+                'price' => '$75.00',
+                'image' => 'assets/img/product-img-sm-7.jpg',
+            ],
+            [
+                'title' => 'High-rise Jeans',
+                'category' => 'Denim',
+                'price' => '$110.00',
+                'image' => 'assets/img/product-img-sm-8.jpg',
+            ],
+            [
+                'title' => 'Midnight Sunglasses',
+                'category' => 'Accessories',
+                'price' => '$55.00',
+                'image' => 'assets/img/product-img-sm-9.jpg',
+            ],
+            [
+                'title' => 'Everyday Tote',
+                'category' => 'Bags',
+                'price' => '$92.00',
+                'image' => 'assets/img/product-img-sm-10.jpg',
+            ],
+            [
+                'title' => 'Minimalist Watch',
+                'category' => 'Accessories',
+                'price' => '$210.00',
+                'image' => 'assets/img/product-img-sm-11.jpg',
+            ],
+            [
+                'title' => 'Printed Scarf',
+                'category' => 'Accessories',
+                'price' => '$45.00',
+                'image' => 'assets/img/product-img-sm-12.jpg',
+            ],
+        ],
+    ],
+];
