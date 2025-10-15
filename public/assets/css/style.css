@@ -53,8 +53,9 @@ html {
 body {
   font-family: var(--font-primary);
   margin: auto;
-  overflow: hidden;
-  position: fixed;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
 }
 
 a,

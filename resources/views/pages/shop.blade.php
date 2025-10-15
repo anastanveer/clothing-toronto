@@ -4,26 +4,23 @@
 
 @section('content')
 @php
-    $baseProducts = collect(config('catalog.products.standard'))
-        ->map(function ($product) {
-            $categoryRoute = $product['category_route'] ?? null;
+    $categoryLabel = $activeCategory ? ($categories[$activeCategory] ?? ucfirst($activeCategory)) : null;
+    $breadcrumbs = [
+        ['label' => 'Home', 'url' => route('home'), 'icon' => 'flaticon-home'],
+        ['label' => 'Shop', 'url' => route('shop')],
+    ];
 
-            return array_merge($product, [
-                'details_url' => route('shop.details'),
-                'category_url' => $categoryRoute ? route($categoryRoute) : '#',
-            ]);
-        });
-
-    $products = $baseProducts->concat($baseProducts);
+    if ($categoryLabel) {
+        $breadcrumbs[] = ['label' => $categoryLabel, 'is_current' => true];
+    } else {
+        $breadcrumbs[count($breadcrumbs) - 1]['is_current'] = true;
+    }
 @endphp
 
 <x-layout.page>
     <x-page.header
-        title="Shop Left Sidebar"
-        :breadcrumbs="[
-            ['label' => 'Home', 'url' => route('home'), 'icon' => 'flaticon-home'],
-            ['label' => 'Shop', 'is_current' => true],
-        ]"
+        :title="$categoryLabel ? $categoryLabel . ' Collection' : 'Shop Left Sidebar'"
+        :breadcrumbs="$breadcrumbs"
     />
 
     <!-- MAIN CONTENT SECTION START -->
@@ -220,27 +217,28 @@
 
                 <!-- right products container -->
                 <div class="col-lg-9 col-md-8">
-                    <div class="row ul-bs-row row-cols-lg-3 row-cols-2 row-cols-xxs-1">
-                        @foreach($products as $product)
-                            <div class="col">
-                                <x-product.card :product="$product" />
-                            </div>
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <a href="{{ route('shop') }}" class="btn btn-sm {{ $activeCategory ? 'btn-outline-dark' : 'btn-dark' }}">All</a>
+                        @foreach($categories as $key => $label)
+                            <a href="{{ route('shop.category', $key) }}" class="btn btn-sm {{ $activeCategory === $key ? 'btn-dark' : 'btn-outline-dark' }}">{{ $label }}</a>
                         @endforeach
                     </div>
 
+                    <div class="row ul-bs-row row-cols-lg-3 row-cols-2 row-cols-xxs-1">
+                        @forelse($products as $product)
+                            <div class="col">
+                                <x-product.card :product="$product" />
+                            </div>
+                        @empty
+                            <div class="col-12">
+                                <div class="py-5 text-center text-muted fw-semibold">No products available right now. Please check again soon.</div>
+                            </div>
+                        @endforelse
+                    </div>
+
                     <!-- pagination -->
-                    <div class="ul-pagination">
-                        <ul>
-                            <li><a href="#"><i class="flaticon-left-arrow"></i></a></li>
-                            <li class="pages">
-                                <a href="#" class="active">01</a>
-                                <a href="#">02</a>
-                                <a href="#">03</a>
-                                <a href="#">04</a>
-                                <a href="#">05</a>
-                            </li>
-                            <li><a href="#"><i class="flaticon-arrow-point-to-right"></i></a></li>
-                        </ul>
+                    <div class="mt-4">
+                        {{ $products->links() }}
                     </div>
                 </div>
             </div>

@@ -1,127 +1,106 @@
 @extends('layouts.app')
 
-@section('title', 'Product Details')
+@section('title', $product->meta_title ?? $product->name)
 
 @section('content')
+@php
+    $galleryImages = $product->gallery_images ?? [];
+    if (empty($galleryImages) && $product->featured_image) {
+        $galleryImages = [$product->featured_image];
+    }
+    $displayPrice = $product->sale_price ?? $product->price;
+    $discountPercent = $product->sale_price && $product->sale_price < $product->price
+        ? round((1 - ($product->sale_price / $product->price)) * 100)
+        : null;
+@endphp
+
 <x-layout.page>
     <x-page.header
-        title="Shop Details"
+        :title="$product->name"
+        :subtitle="$product->meta_description"
         :breadcrumbs="[
             ['label' => 'Home', 'url' => route('home'), 'icon' => 'flaticon-home'],
             ['label' => 'Shop', 'url' => route('shop')],
-            ['label' => 'Shop Details', 'is_current' => true],
+            ['label' => ucfirst($product->category ?? 'collection'), 'url' => route('shop.category', $product->category ?? 'men')],
+            ['label' => $product->name, 'is_current' => true],
         ]"
     />
 
+    <div class="ul-inner-page-container">
+        <div class="ul-product-details">
+            <div class="ul-product-details-top">
+                <div class="row ul-bs-row row-cols-lg-2 row-cols-1 align-items-center">
+                    <div class="col">
+                        <div class="ul-product-details-img">
+                            <div class="ul-product-details-img-slider swiper">
+                                <div class="swiper-wrapper">
+                                    @forelse($galleryImages as $image)
+                                        <div class="swiper-slide"><img src="{{ asset($image) }}" alt="{{ $product->name }}"></div>
+                                    @empty
+                                        <div class="swiper-slide"><img src="{{ asset('assets/img/product-details-1.jpg') }}" alt="{{ $product->name }}"></div>
+                                    @endforelse
+                                </div>
 
-        <!-- MAIN CONTENT SECTION START -->
-        <div class="ul-inner-page-container">
-            <div class="ul-product-details">
-                <div class="ul-product-details-top">
-                    <div class="row ul-bs-row row-cols-lg-2 row-cols-1 align-items-center">
-                        <!-- img -->
-                        <div class="col">
-                            <div class="ul-product-details-img">
-                                <div class="ul-product-details-img-slider swiper">
-                                    <div class="swiper-wrapper">
-                                        <!-- single img -->
-                                        <div class="swiper-slide"><img src="{{ asset('assets/img/product-details-1.jpg') }}" alt="Product Image"></div>
-                                        <!-- single img -->
-                                        <div class="swiper-slide"><img src="{{ asset('assets/img/product-details-1.jpg') }}" alt="Product Image"></div>
-                                    </div>
-
-                                    <div class="ul-product-details-img-slider-nav" id="ul-product-details-img-slider-nav">
-                                        <button class="prev"><i class="flaticon-left-arrow"></i></button>
-                                        <button class="next"><i class="flaticon-arrow-point-to-right"></i></button>
-                                    </div>
+                                <div class="ul-product-details-img-slider-nav" id="ul-product-details-img-slider-nav">
+                                    <button class="prev"><i class="flaticon-left-arrow"></i></button>
+                                    <button class="next"><i class="flaticon-arrow-point-to-right"></i></button>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- txt -->
-                        <div class="col">
-                            <div class="ul-product-details-txt">
-                                <!-- product rating -->
-                                <div class="ul-product-details-rating">
-                                    <span class="rating">
-                                        <i class="flaticon-star"></i>
-                                        <i class="flaticon-star"></i>
-                                        <i class="flaticon-star"></i>
-                                        <i class="flaticon-star"></i>
-                                        <i class="flaticon-star"></i>
-                                    </span>
-                                    <span class="review-number">(2 Customer Reviews)</span>
+                    <div class="col">
+                        <div class="ul-product-details-txt">
+                            <div class="ul-product-details-rating d-flex align-items-center gap-3">
+                                <span class="rating">
+                                    <i class="flaticon-star"></i>
+                                    <i class="flaticon-star"></i>
+                                    <i class="flaticon-star"></i>
+                                    <i class="flaticon-star"></i>
+                                    <i class="flaticon-star"></i>
+                                </span>
+                                <span class="text-secondary">Hand-finished quality</span>
+                            </div>
+
+                            <div class="d-flex align-items-baseline gap-3 mt-2">
+                                <span class="ul-product-details-price">${{ number_format($displayPrice, 2) }}</span>
+                                @if($discountPercent)
+                                    <span class="text-muted text-decoration-line-through">${{ number_format($product->price, 2) }}</span>
+                                    <span class="badge bg-danger-subtle text-danger fw-semibold">Save {{ $discountPercent }}%</span>
+                                @endif
+                            </div>
+
+                            <h3 class="ul-product-details-title mt-3">{{ $product->name }}</h3>
+
+                            <p class="ul-product-details-descr">{{ $product->summary ?? 'Tailored for confident silhouettes and effortless layering.' }}</p>
+
+                            <div class="ul-product-details-options">
+                                <div class="ul-product-details-option ul-product-details-sizes">
+                                    <span class="title">Size</span>
+                                    <form action="#" class="variants">
+                                        @foreach(['S', 'M', 'L', 'XL', 'XXL'] as $size)
+                                            @php $inputId = 'ul-product-details-size-' . $loop->index; @endphp
+                                            <label for="{{ $inputId }}">
+                                                <input type="radio" name="product-size" id="{{ $inputId }}" @checked($loop->first) hidden>
+                                                <span class="size-btn">{{ $size }}</span>
+                                            </label>
+                                        @endforeach
+                                    </form>
                                 </div>
 
-                                <!-- price -->
-                                <span class="ul-product-details-price">$120.00</span>
-
-                                <!-- product title -->
-                                <h3 class="ul-product-details-title">Front view modern dark sunglasses</h3>
-
-                                <!-- product description -->
-                                <p class="ul-product-details-descr">Aliquam hendrerit a augue insuscipit. Etiam aliquam massa quis des mauris commodo venenatis ligula commodo leez sed blandit convallis dignissim onec vel pellentesque neque.</p>
-
-                                <!-- product options -->
-                                <div class="ul-product-details-options">
-                                    <div class="ul-product-details-option ul-product-details-sizes">
-                                        <span class="title">Size</span>
-
-                                        <form action="#" class="variants">
-                                            <label for="ul-product-details-size-1">
-                                                <input type="radio" name="product-size" id="ul-product-details-size-1" checked hidden>
-                                                <span class="size-btn">S</span>
+                                <div class="ul-product-details-option ul-product-details-colors">
+                                    <span class="title">Color</span>
+                                    <form action="#" class="variants">
+                                        @foreach(['#18181b', '#d1d5db', '#a855f7', '#ea580c'] as $index => $color)
+                                            @php $colorId = 'ul-product-details-color-' . $index; @endphp
+                                            <label for="{{ $colorId }}">
+                                                <input type="radio" name="product-color" id="{{ $colorId }}" @checked($loop->first) hidden>
+                                                <span class="color" style="background: {{ $color }}"></span>
                                             </label>
-
-                                            <label for="ul-product-details-size-2">
-                                                <input type="radio" name="product-size" id="ul-product-details-size-2" hidden>
-                                                <span class="size-btn">M</span>
-                                            </label>
-
-                                            <label for="ul-product-details-size-3">
-                                                <input type="radio" name="product-size" id="ul-product-details-size-3" hidden>
-                                                <span class="size-btn">L</span>
-                                            </label>
-
-                                            <label for="ul-product-details-size-4">
-                                                <input type="radio" name="product-size" id="ul-product-details-size-4" hidden>
-                                                <span class="size-btn">XL</span>
-                                            </label>
-
-                                            <label for="ul-product-details-size-5">
-                                                <input type="radio" name="product-size" id="ul-product-details-size-5" hidden>
-                                                <span class="size-btn">XXL</span>
-                                            </label>
-                                        </form>
-                                    </div>
-
-                                    <div class="ul-product-details-option ul-product-details-colors">
-                                        <span class="title">Color</span>
-                                        <form action="#" class="variants">
-                                            <label for="ul-product-details-color-1">
-                                                <input type="radio" name="product-color" id="ul-product-details-color-1" checked hidden>
-                                                <span class="color-btn green"></span>
-                                            </label>
-
-                                            <label for="ul-product-details-color-2">
-                                                <input type="radio" name="product-color" id="ul-product-details-color-2" hidden>
-                                                <span class="color-btn blue"></span>
-                                            </label>
-
-                                            <label for="ul-product-details-color-3">
-                                                <input type="radio" name="product-color" id="ul-product-details-color-3" hidden>
-                                                <span class="color-btn brown"></span>
-                                            </label>
-
-                                            <label for="ul-product-details-color-4">
-                                                <input type="radio" name="product-color" id="ul-product-details-color-4" hidden>
-                                                <span class="color-btn red"></span>
-                                            </label>
-                                        </form>
-                                    </div>
+                                        @endforeach
+                                    </form>
                                 </div>
 
-                                <!-- product quantity -->
                                 <div class="ul-product-details-option ul-product-details-quantity">
                                     <span class="title">Quantity</span>
                                     <form action="#" class="ul-product-quantity-wrapper">
@@ -132,142 +111,61 @@
                                         </div>
                                     </form>
                                 </div>
+                            </div>
 
-                                <!-- product actions -->
-                                <div class="ul-product-details-actions">
-                                    <div class="left">
-                                        <button class="add-to-cart">Add to Cart <span class="icon"><i class="flaticon-cart"></i></span></button>
-                                        <button class="add-to-wishlist"><span class="icon"><i class="flaticon-heart"></i></span> Add to wishlist</button>
-                                    </div>
-                                    <div class="share-options">
-                                        <button><i class="flaticon-facebook-app-symbol"></i></button>
-                                        <button><i class="flaticon-twitter"></i></button>
-                                        <button><i class="flaticon-linkedin-big-logo"></i></button>
-                                        <a href="#"><i class="flaticon-youtube"></i></a>
-                                    </div>
+                            <div class="ul-product-details-actions">
+                                <button class="add-to-cart"><span class="icon"><i class="flaticon-shopping-bag"></i></span> Add to cart</button>
+                                <button class="add-to-wishlist"><span class="icon"><i class="flaticon-heart"></i></span> Add to wishlist</button>
+                                <div class="share-options">
+                                    <button><i class="flaticon-facebook-app-symbol"></i></button>
+                                    <button><i class="flaticon-twitter"></i></button>
+                                    <button><i class="flaticon-linkedin-big-logo"></i></button>
+                                    <a href="#"><i class="flaticon-youtube"></i></a>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="ul-product-details-bottom">
-                    <!-- description -->
-                    <div class="ul-product-details-long-descr-wrapper">
-                        <h3 class="ul-product-details-inner-title">Item Description</h3>
-                        <p>Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra, velit viverra lacinia consequat, ipsum odio mollis dolor, nec facilisis arcu arcu ultricies sapien. Quisque ut dapibus nunc. Vivamus sit amet efficitur velit. Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra, velit viverra lacinia consequat, ipsum odio mollis dolor, nec facilisis arcu arcu ultricies sapien. Quisque ut dapibus nunc. Vivamus sit amet efficitur velit.
-                            <br>
-                            <br>
-                            Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra, velit viverra lacinia consequat, ipsum odio mollis dolor, nec facilisis arcu arcu ultricies sapien. Quisque ut dapibus nunc. Vivamus sit amet efficitur velit. Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis
-                        </p>
-                    </div>
-
-                    <!-- reviews -->
-                    <div class="ul-product-details-reviews">
-                        <h3 class="ul-product-details-inner-title">02 Reviews</h3>
-
-                        <!-- single review -->
-                        <div class="ul-product-details-review">
-                            <!-- reviewer image -->
-                            <div class="ul-product-details-review-reviewer-img">
-                                <img src="{{ asset('assets/img/reviewer-img-1.png') }}" alt="Reviewer Image">
-                            </div>
-
-                            <div class="ul-product-details-review-txt">
-                                <div class="header">
-                                    <div class="left">
-                                        <h4 class="reviewer-name">Temptics Pro</h4>
-                                        <h5 class="review-date">March 20, 2023 at 2:37 pm</h5>
-                                    </div>
-
-                                    <div class="right">
-                                        <div class="rating">
-                                            <i class="flaticon-star"></i>
-                                            <i class="flaticon-star"></i>
-                                            <i class="flaticon-star"></i>
-                                            <i class="flaticon-star"></i>
-                                            <i class="flaticon-star-3"></i>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <p>Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra, velit viverra lacinia consequat, ipsum odio mollis dolor, nec facilisis arcu arcu ultricies sapien. Quisque ut dapibus nunc. Vivamus sit amet efficitur velit. Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla</p>
-
-                                <button class="ul-product-details-review-reply-btn">Reply</button>
-                            </div>
-                        </div>
-
-                        <!-- single review -->
-                        <div class="ul-product-details-review">
-                            <!-- reviewer image -->
-                            <div class="ul-product-details-review-reviewer-img">
-                                <img src="{{ asset('assets/img/reviewer-img-2.png') }}" alt="Reviewer Image">
-                            </div>
-
-                            <div class="ul-product-details-review-txt">
-                                <div class="header">
-                                    <div class="left">
-                                        <h4 class="reviewer-name">Temptics Pro</h4>
-                                        <h5 class="review-date">March 20, 2023 at 2:37 pm</h5>
-                                    </div>
-
-                                    <div class="right">
-                                        <div class="rating">
-                                            <i class="flaticon-star"></i>
-                                            <i class="flaticon-star"></i>
-                                            <i class="flaticon-star"></i>
-                                            <i class="flaticon-star"></i>
-                                            <i class="flaticon-star-3"></i>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <p>Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla. Integer non quam commodo, scelerisque felis id, eleifend turpis. Phasellus in nulla quis erat tempor tristique eget vel purus. Nulla pharetra pharetra pharetra. Praesent varius eget justo ut lacinia. Phasellus pharetra, velit viverra lacinia consequat, ipsum odio mollis dolor, nec facilisis arcu arcu ultricies sapien. Quisque ut dapibus nunc. Vivamus sit amet efficitur velit. Phasellus eget fermentum mauris. Suspendisse nec dignissim nulla</p>
-
-                                <button class="ul-product-details-review-reply-btn">Reply</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- review form -->
-                    <div class="ul-product-details-review-form-wrapper">
-                        <h3 class="ul-product-details-inner-title">Write A Review</h3>
-                        <span class="note">Your email address will not be published.</span>
-
-                        <form class="ul-product-details-review-form">
-                            <div class="form-group rating-field-wrapper">
-                                <span class="title">Rate this product? *</span>
-                                <div class="rating-field">
-                                    <button type="button"><i class="flaticon-star-3"></i></button>
-                                    <button type="button"><i class="flaticon-star-3"></i></button>
-                                    <button type="button"><i class="flaticon-star-3"></i></button>
-                                    <button type="button"><i class="flaticon-star-3"></i></button>
-                                    <button type="button"><i class="flaticon-star-3"></i></button>
-                                </div>
-                            </div>
-
-                            <div class="row row-cols-2 row-cols-xxs-1 ul-bs-row">
-                                <div class="form-group">
-                                    <input type="text" name="review-name" id="review-name" placeholder="Your Name">
-                                </div>
-
-                                <div class="form-group">
-                                    <input type="email" name="review-email" id="review-email" placeholder="Your Email">
-                                </div>
-
-                                <div class="form-group col-12">
-                                    <textarea name="review-message" id="review-message" placeholder="Your Review"></textarea>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <button type="submit">Post Review <span><i class="flaticon-up-right-arrow"></i></span></button>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>
+
+            <div class="ul-product-details-bottom">
+                <div class="ul-product-details-long-descr-wrapper">
+                    <h3 class="ul-product-details-inner-title">Item Description</h3>
+                    <p>{!! nl2br(e($product->description ?? 'A signature wardrobe essential crafted to elevate any ensemble. Pair with relaxed tailoring or bold accessories for a complete look.')) !!}</p>
+                </div>
+
+                <div class="ul-product-details-reviews">
+                    <h3 class="ul-product-details-inner-title">Styling Notes</h3>
+                    <div class="ul-product-details-review">
+                        <div class="ul-product-details-review-txt w-100">
+                            <p class="mb-0">Layer with soft tailoring, finish with sculpted accessories, and keep the palette tonal for the full Glamer effect. Update the look each season by swapping in statement footwear or textural outerwear.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ul-product-details-review-form-wrapper">
+                    <h3 class="ul-product-details-inner-title">Care Instructions</h3>
+                    <ul class="mb-0 text-secondary">
+                        <li>Dry clean for best longevity.</li>
+                        <li>Steam to refresh and maintain structure.</li>
+                        <li>Store on padded hangers away from direct light.</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <!-- MAIN CONTENT SECTION END -->
+
+        <section class="ul-products ul-products--related mt-5">
+            <h2 class="ul-section-title text-center mb-4">You may also like</h2>
+            <div class="swiper ul-flash-sale-slider">
+                <div class="swiper-wrapper">
+                    @foreach($relatedProducts as $related)
+                        <div class="swiper-slide">
+                            <x-product.card :product="$related" />
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    </div>
 </x-layout.page>
 @endsection

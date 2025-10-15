@@ -3,44 +3,6 @@
 @section('title', 'Home')
 
 @section('content')
-@php
-    $productList = collect(config('catalog.products.standard'))
-        ->map(function ($product) {
-            $categoryRoute = $product['category_route'] ?? null;
-
-            return array_merge($product, [
-                'details_url' => route('shop.details'),
-                'category_url' => $categoryRoute ? route($categoryRoute) : '#',
-            ]);
-        });
-
-    $productSliderItems = $productList->concat($productList);
-    $flashSaleProducts = $productList;
-
-    $horizontalProducts = collect(config('catalog.products.compact'))
-        ->map(function ($product) {
-            return array_merge($product, [
-                'details_url' => route('shop.details'),
-                'category_url' => route('shop'),
-                'rating' => 5,
-            ]);
-        });
-
-    $filterClasses = [
-        'best-selling',
-        'on-selling',
-        'top-rating',
-        'top-rating',
-        'on-selling',
-        'best-selling',
-        'on-selling',
-        'top-rating',
-        'on-selling',
-        'best-selling',
-        'best-selling',
-        'on-selling',
-    ];
-@endphp
 
 <x-layout.page>
         <!-- BANNER SECTION START -->
@@ -721,113 +683,57 @@
 
 
         <!-- BLOG SECTION START -->
-        <div class="ul-container">
-            <section class="ul-blogs">
+        <section class="ul-blogs">
+            <div class="ul-container">
                 <div class="ul-inner-container">
-                    <!-- heading -->
                     <div class="ul-section-heading">
                         <div class="left">
-                            <span class="ul-section-sub-title">News & Blog</span>
-                            <h2 class="ul-section-title">Latest News & Blog</h2>
+                            <span class="ul-section-sub-title">latest stories</span>
+                            <h2 class="ul-section-title">Fresh From The Atelier</h2>
                         </div>
 
-                        <div>
-                            <a href="{{ route('blog') }}" class="ul-blogs-heading-btn">View All BLog <i class="flaticon-up-right-arrow"></i></a>
+                        <div class="right">
+                            <a href="{{ route('blog') }}" class="ul-blogs-heading-btn">View All Blog <i class="flaticon-up-right-arrow"></i></a>
                         </div>
                     </div>
 
-                    <!-- blog grid -->
-                    <div class="row ul-bs-row row-cols-md-3 row-cols-2 row-cols-xxs-1">
-                        <!-- single blog -->
-                        <div class="col">
-                            <div class="ul-blog">
-                                <div class="ul-blog-img">
-                                    <img src="{{ asset('assets/img/blog-1.jpg') }}" alt="Article Image">
+                    <div class="row ul-bs-row row-cols-md-3 row-cols-1">
+                        @forelse($recentPosts as $post)
+                            <div class="col">
+                                <div class="ul-blog">
+                                    <div class="ul-blog-img">
+                                        <img src="{{ asset($post->featured_image ?? 'assets/img/blog-1.jpg') }}" alt="{{ $post->title }}">
 
-                                    <div class="date">
-                                        <span class="number">15</span>
-                                        <span class="txt">Dec</span>
-                                    </div>
-                                </div>
-
-                                <div class="ul-blog-txt">
-                                    <div class="ul-blog-infos flex gap-x-[30px] mb-[16px]">
-                                        <!-- single info -->
-                                        <div class="ul-blog-info">
-                                            <span class="icon"><i class="flaticon-user-2"></i></span>
-                                            <span class="text font-normal text-[14px] text-etGray">By Admin</span>
+                                        <div class="date">
+                                            <span class="number">{{ optional($post->published_at)->format('d') ?? now()->format('d') }}</span>
+                                            <span class="txt">{{ optional($post->published_at)->format('M') ?? now()->format('M') }}</span>
                                         </div>
                                     </div>
 
-                                    <h3 class="ul-blog-title"><a href="{{ route('blog.details') }}">Cuticle Pushers & Trimmers</a></h3>
-                                    <p class="ul-blog-descr">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration</p>
-
-                                    <a href="{{ route('blog.details') }}" class="ul-blog-btn">Read More <span class="icon"><i class="flaticon-up-right-arrow"></i></span></a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- single blog -->
-                        <div class="col">
-                            <div class="ul-blog">
-                                <div class="ul-blog-img">
-                                    <img src="{{ asset('assets/img/blog-2.jpg') }}" alt="Article Image">
-
-                                    <div class="date">
-                                        <span class="number">15</span>
-                                        <span class="txt">Dec</span>
-                                    </div>
-                                </div>
-
-                                <div class="ul-blog-txt">
-                                    <div class="ul-blog-infos flex gap-x-[30px] mb-[16px]">
-                                        <!-- single info -->
-                                        <div class="ul-blog-info">
-                                            <span class="icon"><i class="flaticon-user-2"></i></span>
-                                            <span class="text font-normal text-[14px] text-etGray">By Admin</span>
+                                    <div class="ul-blog-txt">
+                                        <div class="ul-blog-infos flex gap-x-[30px] mb-[16px]">
+                                            <div class="ul-blog-info">
+                                                <span class="icon"><i class="flaticon-user-2"></i></span>
+                                                <span class="text font-normal text-[14px] text-etGray">{{ $post->author->name ?? 'Editorial Team' }}</span>
+                                            </div>
                                         </div>
+
+                                        <h3 class="ul-blog-title"><a href="{{ route('blog.details', $post->slug ?? $post->id) }}">{{ $post->title }}</a></h3>
+                                        <p class="ul-blog-descr">{{ $post->excerpt ?? Illuminate\Support\Str::limit(strip_tags($post->content), 110) }}</p>
+
+                                        <a href="{{ route('blog.details', $post->slug ?? $post->id) }}" class="ul-blog-btn">Read More <span class="icon"><i class="flaticon-up-right-arrow"></i></span></a>
                                     </div>
-
-                                    <h3 class="ul-blog-title"><a href="{{ route('blog.details') }}">Cuticle Pushers & Trimmers</a></h3>
-                                    <p class="ul-blog-descr">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration</p>
-
-                                    <a href="{{ route('blog.details') }}" class="ul-blog-btn">Read More <span class="icon"><i class="flaticon-up-right-arrow"></i></span></a>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- single blog -->
-                        <div class="col">
-                            <div class="ul-blog">
-                                <div class="ul-blog-img">
-                                    <img src="{{ asset('assets/img/blog-3.jpg') }}" alt="Article Image">
-
-                                    <div class="date">
-                                        <span class="number">15</span>
-                                        <span class="txt">Dec</span>
-                                    </div>
-                                </div>
-
-                                <div class="ul-blog-txt">
-                                    <div class="ul-blog-infos flex gap-x-[30px] mb-[16px]">
-                                        <!-- single info -->
-                                        <div class="ul-blog-info">
-                                            <span class="icon"><i class="flaticon-user-2"></i></span>
-                                            <span class="text font-normal text-[14px] text-etGray">By Admin</span>
-                                        </div>
-                                    </div>
-
-                                    <h3 class="ul-blog-title"><a href="{{ route('blog.details') }}">Cuticle Pushers & Trimmers</a></h3>
-                                    <p class="ul-blog-descr">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration</p>
-
-                                    <a href="{{ route('blog.details') }}" class="ul-blog-btn">Read More <span class="icon"><i class="flaticon-up-right-arrow"></i></span></a>
-                                </div>
+                        @empty
+                            <div class="col-12">
+                                <div class="py-5 text-center text-muted fw-semibold">Stories are being crafted. Check back soon for editorials.</div>
                             </div>
-                        </div>
+                        @endforelse
                     </div>
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
         <!-- BLOG SECTION END -->
 
 

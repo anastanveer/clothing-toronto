@@ -1,13 +1,24 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\LogController;
+use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\ShopController;
+use App\Http\Controllers\Storefront\BlogController;
 
-Route::view('/', 'pages.index')->name('home');
+Route::get('/', HomeController::class)->name('home');
 
-Route::view('/shop', 'pages.shop')->name('shop');
-Route::view('/shop/details', 'pages.shop-details')->name('shop.details');
-Route::view('/shop/no-sidebar', 'pages.shop-no-sidebar')->name('shop.no-sidebar');
-Route::view('/shop/right-sidebar', 'pages.shop-right-sidebar')->name('shop.right-sidebar');
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+Route::get('/shop/category/{category}', [ShopController::class, 'category'])
+    ->name('shop.category')
+    ->whereIn('category', ['men', 'women', 'kids']);
+Route::get('/shop/details/{slug?}', [ShopController::class, 'show'])->name('shop.details');
+Route::get('/shop/no-sidebar', [ShopController::class, 'noSidebar'])->name('shop.no-sidebar');
+Route::get('/shop/right-sidebar', [ShopController::class, 'rightSidebar'])->name('shop.right-sidebar');
 
 Route::view('/cart', 'pages.cart')->name('cart');
 Route::view('/checkout', 'pages.checkout')->name('checkout');
@@ -22,9 +33,28 @@ Route::view('/faq', 'pages.faq')->name('faq');
 Route::view('/about', 'pages.about')->name('about');
 Route::view('/reviews', 'pages.reviews')->name('reviews');
 
-Route::view('/blog', 'pages.blog')->name('blog');
-Route::view('/blog/details', 'pages.blog-details')->name('blog.details');
-Route::view('/blog/classic', 'pages.blog-2')->name('blog.two');
+Route::get('/blog', [BlogController::class, 'index'])->name('blog');
+Route::get('/blog/details/{slug?}', [BlogController::class, 'show'])->name('blog.details');
+Route::get('/blog/classic', [BlogController::class, 'classic'])->name('blog.two');
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
+        Route::post('login', [AuthController::class, 'login'])->name('login.submit');
+    });
+
+    Route::middleware('admin')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+        Route::get('/', DashboardController::class)->name('dashboard');
+        Route::resource('products', ProductController::class)->parameters([
+            'products' => 'product',
+        ])->except(['show']);
+        Route::resource('blog', BlogPostController::class)->parameters([
+            'blog' => 'blog',
+        ])->except(['show']);
+        Route::get('logs', LogController::class)->name('logs');
+    });
+});
 
 // Legacy .html support
 foreach ([

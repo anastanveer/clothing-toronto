@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\BlogPost;
+use App\Models\Product;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,11 +15,25 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $admin = User::updateOrCreate(
+            ['email' => 'admin@glamer.local'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('Anas12345!@#$%'),
+                'is_admin' => true,
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        foreach (Product::CATEGORIES as $category) {
+            Product::factory()
+                ->count(8)
+                ->create(['category' => $category]);
+        }
+
+        BlogPost::factory()
+            ->count(8)
+            ->create([
+                'author_id' => $admin->id,
+            ]);
     }
 }
