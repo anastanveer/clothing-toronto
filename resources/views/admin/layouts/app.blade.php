@@ -23,6 +23,11 @@
                     </div>
                 </div>
 
+                @php
+                    $adminUser = auth()->user();
+                    $isFullAdmin = $adminUser?->isFullAdmin();
+                @endphp
+
                 <nav>
                     <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                         <i class="flaticon-home"></i> Overview
@@ -30,12 +35,20 @@
                     <a href="{{ route('admin.products.index') }}" class="{{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
                         <i class="flaticon-shopping-bag"></i> Products
                     </a>
-                    <a href="{{ route('admin.blog.index') }}" class="{{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
-                        <i class="flaticon-blogging"></i> Blog
-                    </a>
-                    <a href="{{ route('admin.logs') }}" class="{{ request()->routeIs('admin.logs') ? 'active' : '' }}">
-                        <i class="flaticon-warning"></i> Logs
-                    </a>
+                    @if($isFullAdmin)
+                        <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                            <i class="flaticon-user"></i> Users
+                        </a>
+                        <a href="{{ route('admin.brands.index') }}" class="{{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
+                            <i class="flaticon-sparkle"></i> Brands
+                        </a>
+                        <a href="{{ route('admin.blog.index') }}" class="{{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
+                            <i class="flaticon-blogging"></i> Blog
+                        </a>
+                        <a href="{{ route('admin.logs') }}" class="{{ request()->routeIs('admin.logs') ? 'active' : '' }}">
+                            <i class="flaticon-warning"></i> Logs
+                        </a>
+                    @endif
                 </nav>
             </div>
 
@@ -58,14 +71,14 @@
                 <div class="admin-topbar__actions">
                     <span class="admin-topbar__badge">Glamer Collective</span>
                     @php
-                        $adminName = optional(auth()->user())->name ?? 'Glam Lead';
+                        $adminName = optional($adminUser)->name ?? 'Glam Lead';
                         $adminInitial = strtoupper(substr($adminName, 0, 1) ?: 'G');
                     @endphp
                     <div class="admin-profile">
                         <div class="admin-profile__avatar">{{ $adminInitial }}</div>
                         <div>
                             <div class="admin-profile__name">{{ $adminName }}</div>
-                            <div class="admin-profile__role">Admin</div>
+                            <div class="admin-profile__role">{{ $adminUser?->isFullAdmin() ? 'Full admin' : ($adminUser?->isProductAdmin() ? 'Product admin' : 'Admin') }}</div>
                         </div>
                     </div>
                 </div>

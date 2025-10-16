@@ -3,12 +3,18 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\LogController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Storefront\AuthController as StorefrontAuthController;
 use App\Http\Controllers\Storefront\HomeController;
 use App\Http\Controllers\Storefront\ShopController;
 use App\Http\Controllers\Storefront\BlogController;
+use App\Http\Controllers\Storefront\UserDashboardController;
+use App\Http\Controllers\Storefront\WishlistController;
+use App\Http\Controllers\Storefront\CartController;
 
 Route::get('/', HomeController::class)->name('home');
 
@@ -19,13 +25,28 @@ Route::get('/shop/category/{category}', [ShopController::class, 'category'])
 Route::get('/shop/details/{slug?}', [ShopController::class, 'show'])->name('shop.details');
 Route::get('/shop/no-sidebar', [ShopController::class, 'noSidebar'])->name('shop.no-sidebar');
 Route::get('/shop/right-sidebar', [ShopController::class, 'rightSidebar'])->name('shop.right-sidebar');
+Route::get('/shop/brand/{slug}', [ShopController::class, 'brand'])->name('shop.brand');
 
-Route::view('/cart', 'pages.cart')->name('cart');
 Route::view('/checkout', 'pages.checkout')->name('checkout');
-Route::view('/wishlist', 'pages.wishlist')->name('wishlist');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [StorefrontAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [StorefrontAuthController::class, 'login'])->name('login.submit');
 
-Route::view('/login', 'pages.login')->name('login');
-Route::view('/signup', 'pages.signup')->name('signup');
+    Route::get('/signup', [StorefrontAuthController::class, 'showRegistrationForm'])->name('signup');
+    Route::post('/signup', [StorefrontAuthController::class, 'register'])->name('signup.submit');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [StorefrontAuthController::class, 'logout'])->name('logout');
+    Route::get('/account/dashboard', [UserDashboardController::class, 'index'])->name('account.dashboard');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart');
+    Route::patch('/cart/items/{cartItem}', [CartController::class, 'update'])->name('cart.items.update');
+    Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::delete('/wishlist/{wishlistItem}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+    Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
+});
 
 Route::view('/our-store', 'pages.our-store')->name('our-store');
 Route::view('/contact', 'pages.contact')->name('contact');
@@ -46,13 +67,24 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::middleware('admin')->group(function () {
         Route::post('logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/', DashboardController::class)->name('dashboard');
+
         Route::resource('products', ProductController::class)->parameters([
             'products' => 'product',
         ])->except(['show']);
-        Route::resource('blog', BlogPostController::class)->parameters([
-            'blog' => 'blog',
-        ])->except(['show']);
-        Route::get('logs', LogController::class)->name('logs');
+
+        Route::middleware('admin.full')->group(function () {
+            Route::get('users', [UserController::class, 'index'])->name('users.index');
+            Route::resource('brands', BrandController::class)
+                ->parameters(['brands' => 'brand']);
+            Route::patch('brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])
+                ->name('brands.toggle-status');
+
+            Route::resource('blog', BlogPostController::class)->parameters([
+                'blog' => 'blog',
+            ])->except(['show']);
+
+            Route::get('logs', LogController::class)->name('logs');
+        });
     });
 });
 

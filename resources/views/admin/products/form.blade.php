@@ -1,5 +1,7 @@
 @php
     $product = $product ?? null;
+    $brandCollection = collect($brands ?? \App\Models\Brand::orderBy('name')->get());
+    $selectedBrandId = old('brand_id', $product?->brand_id ?? ($selectedBrandId ?? null));
 @endphp
 
 <div class="row g-4">
@@ -11,19 +13,28 @@
             </div>
 
             <div class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Slug</label>
                     <input type="text" name="slug" class="form-control" value="{{ old('slug', $product?->slug) }}" placeholder="auto-generated if empty">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">SKU</label>
                     <input type="text" name="sku" class="form-control" value="{{ old('sku', $product?->sku) }}">
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Category</label>
                     <select name="category" class="form-select" required>
                         @foreach(\App\Models\Product::CATEGORIES as $category)
                             <option value="{{ $category }}" @selected(old('category', $product?->category ?? 'men') === $category)>{{ ucfirst($category) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Brand</label>
+                    <select name="brand_id" class="form-select" required>
+                        <option value="">Select brand</option>
+                        @foreach($brandCollection as $brand)
+                            <option value="{{ $brand->id }}" @selected($selectedBrandId == $brand->id)>{{ $brand->name }}</option>
                         @endforeach
                     </select>
                 </div>

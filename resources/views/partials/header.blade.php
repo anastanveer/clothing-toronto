@@ -58,9 +58,50 @@
 
                 <div class="ul-header-actions">
                     <button class="ul-header-mobile-search-opener d-xxl-none"><i class="flaticon-search-interface-symbol"></i></button>
-                    <a href="{{ route('login') }}"><i class="flaticon-user"></i></a>
-                    <a href="{{ route('wishlist') }}"><i class="flaticon-heart"></i></a>
-                    <a href="{{ route('cart') }}"><i class="flaticon-shopping-bag"></i></a>
+                    @auth
+                        <a href="{{ route('account.dashboard') }}" title="My account"><i class="flaticon-user"></i></a>
+                        @php
+                            $cartItems = auth()->user()->cartItems()->with('product')->get();
+                            $headerWishlistCount = auth()->user()->wishlistItems()->count();
+                            $headerCartCount = $cartItems->sum('quantity');
+                            $headerCartValue = $cartItems->sum('line_total');
+                            $loyaltySummary = \App\Support\Loyalty::summarize((float) auth()->user()->orders()->sum('total'), (float) $headerCartValue);
+                        @endphp
+                        <div class="ul-header-loyalty">
+                            <a href="{{ route('wishlist') }}" title="Wishlist" class="ul-header-icon {{ $headerWishlistCount ? 'has-badge' : '' }}">
+                                <i class="flaticon-heart"></i>
+                                @if($headerWishlistCount)
+                                    <span class="ul-header-icon__badge ul-header-icon__badge--pulse">{{ $headerWishlistCount }}</span>
+                                @endif
+                            </a>
+                            <div class="ul-header-loyalty__meter">
+                                <strong>{{ number_format($loyaltySummary['loyaltyPoints']) }} pts</strong>
+                                <span>
+                                    @if($loyaltySummary['cartPoints'] > 0)
+                                        +{{ number_format($loyaltySummary['cartPoints']) }} pending
+                                    @else
+                                        Loyalty wallet
+                                    @endif
+                                </span>
+                            </div>
+                        </div>
+                        <a href="{{ route('cart') }}" title="Shopping bag" class="ul-header-icon {{ $headerCartCount ? 'has-badge' : '' }}">
+                            <i class="flaticon-shopping-bag"></i>
+                            @if($headerCartCount)
+                                <span class="ul-header-icon__badge">{{ $headerCartCount }}</span>
+                            @endif
+                        </a>
+                    @else
+                        <a href="{{ route('login') }}" title="Sign in"><i class="flaticon-user"></i></a>
+                        <div class="ul-header-loyalty">
+                            <a href="{{ route('login') }}" title="Wishlist" class="ul-header-icon"><i class="flaticon-heart"></i></a>
+                            <div class="ul-header-loyalty__meter">
+                                <strong>0 pts</strong>
+                                <span>Sign in to earn</span>
+                            </div>
+                        </div>
+                        <a href="{{ route('login') }}" title="Shopping bag" class="ul-header-icon"><i class="flaticon-shopping-bag"></i></a>
+                    @endauth
                 </div>
 
                 <div class="d-inline-flex">

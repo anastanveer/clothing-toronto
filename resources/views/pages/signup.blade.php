@@ -23,49 +23,74 @@
                     </div>
 
                     <div class="col-xl-4 col-md-7">
-                        <form action="#" class="ul-contact-form">
+                        <form action="{{ route('signup.submit') }}" method="POST" class="ul-contact-form">
+                            @csrf
                             <div class="row">
-                                <!-- firstname -->
-                                <div class="form-group">
-                                    <div class="position-relative">
-                                        <input type="text" name="firstname" id="firstname" placeholder="First Name">
-                                    </div>
-                                </div>
-
-                                <!-- lastname -->
-                                <div class="form-group">
-                                    <div class="position-relative">
-                                        <input type="text" name="lastname" id="lastname" placeholder="Last Name">
-                                    </div>
-                                </div>
-
-                                <!-- phone -->
-                                <div class="form-group">
-                                    <div class="position-relative">
-                                        <input type="tel" name="phone-number" id="phone-number" placeholder="Phone Number">
-                                    </div>
-                                </div>
-
                                 <!-- email -->
                                 <div class="form-group">
                                     <div class="position-relative">
-                                        <input type="email" name="email" id="email" placeholder="Enter Email Address">
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            id="name"
+                                            value="{{ old('name') }}"
+                                            placeholder="Full Name"
+                                            required
+                                            autocomplete="name"
+                                        >
+                                    </div>
+                                    @error('name')
+                                        <span class="ul-form-error">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="position-relative">
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            id="email"
+                                            value="{{ old('email') }}"
+                                            placeholder="Enter Email Address"
+                                            required
+                                            autocomplete="email"
+                                        >
                                         <span class="field-icon"><i class="flaticon-email"></i></span>
                                     </div>
+                                    @error('email')
+                                        <span class="ul-form-error">{{ $message }}</span>
+                                    @enderror
                                 </div>
 
                                 <!-- password -->
                                 <div class="form-group">
                                     <div class="position-relative">
-                                        <input type="password" name="password" id="password" placeholder="Enter Password">
+                                        <input
+                                            type="password"
+                                            name="password"
+                                            id="password"
+                                            placeholder="Enter Password"
+                                            required
+                                            autocomplete="new-password"
+                                        >
                                         <span class="field-icon"><i class="flaticon-lock"></i></span>
                                     </div>
+                                    @error('password')
+                                        <span class="ul-form-error">{{ $message }}</span>
+                                    @enderror
                                 </div>
 
                                 <!-- CONFIRM PASSWORD -->
                                 <div class="form-group">
                                     <div class="position-relative">
-                                        <input type="password" name="confirm-password" id="confirm-password" placeholder="Confirm Password">
+                                        <input
+                                            type="password"
+                                            name="password_confirmation"
+                                            id="password_confirmation"
+                                            placeholder="Confirm Password"
+                                            required
+                                            autocomplete="new-password"
+                                        >
                                         <span class="field-icon"><i class="flaticon-lock"></i></span>
                                     </div>
                                 </div>

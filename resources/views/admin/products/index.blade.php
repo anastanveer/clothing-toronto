@@ -30,6 +30,7 @@
                     <th>Name</th>
                     <th>SKU</th>
                     <th>Category</th>
+                    <th>Brand</th>
                     <th>Status</th>
                     <th>Stock</th>
                     <th>Price</th>
@@ -42,6 +43,7 @@
                         <td class="fw-semibold">{{ $product->name }}</td>
                         <td class="text-secondary small">{{ $product->sku ?? '—' }}</td>
                         <td class="text-secondary small">{{ ucfirst($product->category ?? 'men') }}</td>
+                        <td class="text-secondary small">{{ $product->brand?->name ?? '—' }}</td>
                         <td><span class="status-pill {{ $product->status }}">{{ ucfirst($product->status) }}</span></td>
                         <td>{{ $product->stock }}</td>
                         <td>${{ number_format($product->sale_price ?? $product->price, 2) }}</td>
@@ -56,7 +58,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center text-secondary">No products yet.</td>
+                        <td colspan="8" class="text-center text-secondary">No products yet.</td>
                     </tr>
                 @endforelse
             </tbody>

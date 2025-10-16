@@ -16,7 +16,9 @@ class EnsureAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! Auth::check() || ! Auth::user()->is_admin) {
+        $user = Auth::user();
+
+        if (! $user || ! $user->isAdmin()) {
             return redirect()->route('admin.login')->withErrors([
                 'email' => 'Please sign in as an administrator to continue.',
             ]);

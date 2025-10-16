@@ -23,13 +23,25 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (! Auth::attempt(array_merge($credentials, ['is_admin' => true]), $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()
                 ->withErrors(['email' => 'Invalid credentials or insufficient permissions.'])
                 ->onlyInput('email');
         }
 
+        if (! Auth::user()?->isAdmin()) {
+            Auth::logout();
+
+            return back()
+                ->withErrors(['email' => 'You do not have permission to access the admin area.'])
+                ->onlyInput('email');
+        }
+
         $request->session()->regenerate();
+
+        Auth::user()?->forceFill([
+            'last_login_at' => now(),
+        ])->save();
 
         return redirect()->intended(route('admin.dashboard'));
     }

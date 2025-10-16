@@ -51,15 +51,49 @@
 
                     <div class="col">
                         <div class="ul-product-details-txt">
+                            @php
+                                $averageRating = round($product->average_rating ?? 0, 1);
+                                $reviewsCount = (int) ($product->reviews_count ?? 0);
+                                $ratingCopy = $averageRating > 0
+                                    ? $averageRating . ' / 5' . ($reviewsCount ? ' · ' . $reviewsCount . ' review' . ($reviewsCount === 1 ? '' : 's') : '')
+                                    : 'Be the first to review';
+                                $colorPalette = collect($product->options['colors'] ?? [])
+                                    ->push($product->primary_color)
+                                    ->filter()
+                                    ->unique()
+                                    ->values();
+                                $colorSwatches = $colorPalette->map(function ($label) {
+                                    $label = trim((string) $label);
+                                    $map = [
+                                        'Black' => '#111827',
+                                        'White' => '#ffffff',
+                                        'Olive' => '#4d7c0f',
+                                        'Stone' => '#a8a29e',
+                                        'Sand' => '#f5deb3',
+                                        'Navy' => '#1e3a8a',
+                                        'Blush' => '#f9a8d4',
+                                        'Burgundy' => '#7f1d1d',
+                                        'Emerald' => '#047857',
+                                        'Mustard' => '#d97706',
+                                        'Green' => '#15803d',
+                                        'Blue' => '#2563eb',
+                                        'Red' => '#ef4444',
+                                    ];
+
+                                    return [
+                                        'label' => $label,
+                                        'value' => $map[$label] ?? '#e2e8f0',
+                                    ];
+                                });
+                            @endphp
+
                             <div class="ul-product-details-rating d-flex align-items-center gap-3">
                                 <span class="rating">
-                                    <i class="flaticon-star"></i>
-                                    <i class="flaticon-star"></i>
-                                    <i class="flaticon-star"></i>
-                                    <i class="flaticon-star"></i>
-                                    <i class="flaticon-star"></i>
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="flaticon-star {{ $i <= round($averageRating) ? '' : 'text-muted opacity-25' }}"></i>
+                                    @endfor
                                 </span>
-                                <span class="text-secondary">Hand-finished quality</span>
+                                <span class="text-secondary">{{ $ratingCopy }}</span>
                             </div>
 
                             <div class="d-flex align-items-baseline gap-3 mt-2">
@@ -88,18 +122,21 @@
                                     </form>
                                 </div>
 
-                                <div class="ul-product-details-option ul-product-details-colors">
-                                    <span class="title">Color</span>
-                                    <form action="#" class="variants">
-                                        @foreach(['#18181b', '#d1d5db', '#a855f7', '#ea580c'] as $index => $color)
-                                            @php $colorId = 'ul-product-details-color-' . $index; @endphp
-                                            <label for="{{ $colorId }}">
-                                                <input type="radio" name="product-color" id="{{ $colorId }}" @checked($loop->first) hidden>
-                                                <span class="color" style="background: {{ $color }}"></span>
-                                            </label>
-                                        @endforeach
-                                    </form>
-                                </div>
+                                @if($colorSwatches->isNotEmpty())
+                                    <div class="ul-product-details-option ul-product-details-colors">
+                                        <span class="title">Color</span>
+                                        <form action="#" class="variants">
+                                            @foreach($colorSwatches as $index => $color)
+                                                @php $colorId = 'ul-product-details-color-' . $index; @endphp
+                                                <label for="{{ $colorId }}">
+                                                    <input type="radio" name="product-color" id="{{ $colorId }}" @checked($loop->first) hidden>
+                                                    <span class="color" style="background: {{ $color['value'] }}"></span>
+                                                    <span class="visually-hidden">{{ $color['label'] }}</span>
+                                                </label>
+                                            @endforeach
+                                        </form>
+                                    </div>
+                                @endif
 
                                 <div class="ul-product-details-option ul-product-details-quantity">
                                     <span class="title">Quantity</span>

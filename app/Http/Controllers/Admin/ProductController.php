@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Brand;
 use App\Models\Product;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ class ProductController extends Controller
     public function index(Request $request): View
     {
         $products = Product::query()
+            ->with('brand')
             ->when($request->filled('search'), function ($query) use ($request) {
                 $term = '%' . $request->string('search')->trim()->toString() . '%';
                 $query->where('name', 'like', $term)
@@ -30,9 +32,19 @@ class ProductController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View
     {
-        return view('admin.products.create');
+        $brands = Brand::orderBy('name')->get();
+        $selectedBrandId = $request->integer('brand_id');
+
+        if (! $selectedBrandId && $request->filled('brand')) {
+            $selectedBrandId = Brand::where('slug', $request->string('brand')->toString())->value('id');
+        }
+
+        return view('admin.products.create', [
+            'brands' => $brands,
+            'selectedBrandId' => $selectedBrandId,
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -51,7 +63,12 @@ class ProductController extends Controller
 
     public function edit(Product $product): View
     {
-        return view('admin.products.edit', compact('product'));
+        $product->load('brand');
+
+        return view('admin.products.edit', [
+            'product' => $product,
+            'brands' => Brand::orderBy('name')->get(),
+        ]);
     }
 
     public function update(Request $request, Product $product): RedirectResponse
@@ -89,6 +106,7 @@ class ProductController extends Controller
             'slug' => ['nullable', 'string', 'max:255', 'unique:products,slug,' . $id],
             'sku' => ['nullable', 'string', 'max:255', 'unique:products,sku,' . $id],
             'category' => ['required', 'in:' . implode(',', Product::CATEGORIES)],
+            'brand_id' => ['required', 'exists:brands,id'],
             'summary' => ['nullable', 'string', 'max:600'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],

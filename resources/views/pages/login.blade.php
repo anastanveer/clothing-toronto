@@ -25,27 +25,62 @@
                         </div>
 
                         <div class="col-xl-4 col-md-7">
-                            <form action="#" class="ul-contact-form">
+                            <form action="{{ route('login.submit') }}" method="POST" class="ul-contact-form">
+                                @csrf
                                 <div class="row">
                                     <!-- email -->
                                     <div class="form-group">
                                         <div class="position-relative">
-                                            <input type="email" name="email" id="email" placeholder="Enter Email Address">
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                id="email"
+                                                value="{{ old('email', 'customer@glamer.local') }}"
+                                                placeholder="Enter Email Address"
+                                                required
+                                                autocomplete="email"
+                                            >
                                         </div>
+                                        @error('email')
+                                            <span class="ul-form-error">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     <!-- password -->
                                     <div class="form-group">
                                         <div class="position-relative">
-                                            <input type="password" name="password" id="password" placeholder="Enter Password">
+                                            <input
+                                                type="password"
+                                                name="password"
+                                                id="password"
+                                                value="{{ old('password', 'Customer123!') }}"
+                                                placeholder="Enter Password"
+                                                required
+                                                autocomplete="current-password"
+                                            >
                                         </div>
+                                        @error('password')
+                                            <span class="ul-form-error">{{ $message }}</span>
+                                        @enderror
                                     </div>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+                                    <label class="ul-form-remember">
+                                        <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
+                                        <span>Keep me signed in</span>
+                                    </label>
+                                    <a href="#" class="ul-form-link">Forgot password?</a>
                                 </div>
                                 <!-- submit btn -->
                                 <button type="submit">Log In</button>
                             </form>
 
-                            <p class="text-center mt-4 mb-0">Already have an account? <a href="{{ route('signup') }}">Sign Up</a></p>
+                            <div class="text-center mt-4">
+                                <strong>Demo credentials</strong>
+                                <p class="mb-0 text-secondary small">Email: customer@glamer.local<br>Password: Customer123!</p>
+                            </div>
+
+                            <p class="text-center mt-4 mb-0">New to Glamer? <a href="{{ route('signup') }}">Create an account</a></p>
                         </div>
                     </div>
                 </div>
