@@ -5,6 +5,7 @@
     'activeFilters' => null,
     'sortOptions' => [],
     'formId' => 'shopFiltersForm',
+    'activeBrand' => null,
     'showSearch' => false,
 ])
 
@@ -16,23 +17,45 @@
     }
     $currentSort = $filters['sort'] ?? 'newest';
     $searchValue = $filters['search'] ?? '';
+    $activeBrandModel = $activeBrand;
+    $activeBrandSlug = $activeBrandModel?->slug ?? ($filters['brand_slug'] ?? null);
+    $brandlessQuery = $queryBase->except(['brand', 'brand_slug', 'brand_id']);
 @endphp
 
 <div class="shop-filters-bar d-flex flex-column gap-3 mb-4">
     <div class="d-flex flex-column flex-lg-row gap-3 align-items-lg-center justify-content-between">
         <div class="d-flex flex-wrap gap-2">
+            @php
+                $allQuery = $brandlessQuery->except('category')->toArray();
+                if ($activeBrandSlug) {
+                    $allUrl = route('shop.brand', ['slug' => $activeBrandSlug]);
+                } else {
+                    $allUrl = route('shop');
+                }
+                if (!empty($allQuery)) {
+                    $allUrl .= '?' . http_build_query($allQuery);
+                }
+            @endphp
             <a
-                href="{{ route('shop', $queryBase->except('category')->toArray()) }}"
+                href="{{ $allUrl }}"
                 class="btn btn-sm {{ $activeCategory ? 'btn-outline-dark' : 'btn-dark' }}"
             >All</a>
             @foreach($categories as $key => $label)
                 @php
-                    $params = $queryBase->toArray();
+                    $params = $brandlessQuery->toArray();
                     unset($params['category']);
                     $params['category'] = $key;
+                    if ($activeBrandSlug) {
+                        $categoryUrl = route('shop.brand', ['slug' => $activeBrandSlug]);
+                    } else {
+                        $categoryUrl = route('shop.category', ['category' => $key]);
+                    }
+                    if (!empty($params)) {
+                        $categoryUrl .= '?' . http_build_query($params);
+                    }
                 @endphp
                 <a
-                    href="{{ route('shop.category', array_merge(['category' => $key], $queryBase->toArray())) }}"
+                    href="{{ $categoryUrl }}"
                     class="btn btn-sm {{ $activeCategory === $key ? 'btn-dark' : 'btn-outline-dark' }}"
                 >{{ $label }}</a>
             @endforeach

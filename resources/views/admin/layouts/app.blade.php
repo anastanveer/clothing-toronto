@@ -42,6 +42,12 @@
                         <a href="{{ route('admin.brands.index') }}" class="{{ request()->routeIs('admin.brands.*') ? 'active' : '' }}">
                             <i class="flaticon-sparkle"></i> Brands
                         </a>
+                        <a href="{{ route('admin.announcements.index') }}" class="{{ request()->routeIs('admin.announcements.*') ? 'active' : '' }}">
+                            <i class="flaticon-star"></i> Alerts
+                        </a>
+                        <a href="{{ route('admin.coupons.index') }}" class="{{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                            <i class="flaticon-price-tag-1"></i> Coupons
+                        </a>
                         <a href="{{ route('admin.blog.index') }}" class="{{ request()->routeIs('admin.blog.*') ? 'active' : '' }}">
                             <i class="flaticon-blogging"></i> Blog
                         </a>

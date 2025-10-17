@@ -151,11 +151,6 @@
                             $brandActive = $option['active'] ?? false;
                             $brandUrl = route('shop.brand', ['slug' => $brandSlug]);
                             $brandQuery = $brandQueryBaseDefault
-                                ->merge([
-                                    'brand' => $brandSlug,
-                                    'brand_slug' => $brandSlug,
-                                    'brand_id' => $brandId,
-                                ])
                                 ->filter(fn ($value) => ! is_null($value) && $value !== '');
                             if ($brandQuery->isNotEmpty()) {
                                 $brandUrl .= '?' . http_build_query($brandQuery->toArray());
@@ -168,20 +163,26 @@
                                 <i class="flaticon-arrow-point-to-right"></i>
                             </button>
                             <div class="ul-brand-menu" @if(! $brandActive) hidden @endif>
-                                <a href="{{ $brandUrl }}" class="brand-link {{ $brandActive && empty($activeCategory) ? 'active' : '' }}">All styles ({{ $brandCount }})</a>
+                                @php
+                                    $allStylesQuery = $brandQueryBaseDefault
+                                        ->except(['category'])
+                                        ->filter(fn ($value) => ! is_null($value) && $value !== '');
+                                    $allStylesUrl = route('shop.brand', ['slug' => $brandSlug]);
+                                    if ($allStylesQuery->isNotEmpty()) {
+                                        $allStylesUrl .= '?' . http_build_query($allStylesQuery->toArray());
+                                    }
+                                @endphp
+                                <a href="{{ $allStylesUrl }}" class="brand-link {{ $brandActive && empty($activeCategory) ? 'active' : '' }}">All styles ({{ $brandCount }})</a>
                                 @foreach($option['categories'] as $category)
                                     @php
                                         $categoryQuery = $brandQueryBaseDefault
                                             ->merge([
-                                                'brand' => $brandSlug,
-                                                'brand_slug' => $brandSlug,
-                                                'brand_id' => $brandId,
+                                                'category' => $category['key'],
                                             ])
-                                            ->toArray();
-                                        $categoryQuery = array_filter($categoryQuery, fn ($value) => ! is_null($value) && $value !== '');
-                                        $categoryUrl = route('shop.category', ['category' => $category['key']]);
-                                        if (! empty($categoryQuery)) {
-                                            $categoryUrl .= '?' . http_build_query($categoryQuery);
+                                            ->filter(fn ($value) => ! is_null($value) && $value !== '');
+                                        $categoryUrl = route('shop.brand', ['slug' => $brandSlug]);
+                                        if ($categoryQuery->isNotEmpty()) {
+                                            $categoryUrl .= '?' . http_build_query($categoryQuery->toArray());
                                         }
                                         $isCategoryActive = $brandActive && $activeCategory === $category['key'];
                                     @endphp

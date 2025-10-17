@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\CouponAllocator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -40,9 +41,15 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        Auth::user()?->forceFill([
+        $authUser = Auth::user();
+
+        $authUser?->forceFill([
             'last_login_at' => now(),
         ])->save();
+
+        if ($authUser) {
+            app(CouponAllocator::class)->assignWelcomeBundle($authUser);
+        }
 
         return redirect()->intended(route('account.dashboard'));
     }
@@ -70,6 +77,8 @@ class AuthController extends Controller
         $user->forceFill([
             'last_login_at' => now(),
         ])->save();
+
+        app(CouponAllocator::class)->assignWelcomeBundle($user);
 
         return redirect()->route('account.dashboard');
     }

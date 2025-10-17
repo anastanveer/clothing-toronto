@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Glamer')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="stylesheet" href="{{ asset('assets/icon/flaticon_glamer.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/bootstrap.min.css') }}">
@@ -18,17 +19,24 @@
     @stack('styles')
 </head>
 
-<body>
+<body class="has-mobile-appbar">
     <div class="preloader" id="preloader">
         <div class="loader"></div>
     </div>
 
     @include('partials.sidebar')
-    @include('partials.header')
 
-    @yield('content')
+    <div class="ul-app">
+        @include('partials.header')
 
-    @include('partials.footer')
+        <div class="ul-app__content">
+            @yield('content')
+        </div>
+
+        @include('partials.footer')
+    </div>
+
+    <x-layout.mobile-appbar />
 
     <script src="{{ asset('assets/vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/splide/splide.min.js') }}"></script>

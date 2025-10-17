@@ -3,6 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\CartItem;
+use App\Models\Order;
+use App\Models\ProductLike;
+use App\Models\UserCoupon;
+use App\Models\WishlistItem;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -74,6 +79,11 @@ class User extends Authenticatable
     public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    public function userCoupons(): HasMany
+    {
+        return $this->hasMany(UserCoupon::class);
     }
 
     public function likes(): HasMany

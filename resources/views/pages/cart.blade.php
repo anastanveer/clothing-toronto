@@ -3,7 +3,7 @@
 @section('title', 'Shopping Cart')
 
 @section('content')
-<x-layout.page>
+<x-layout.page class="ul-page--stretch">
     <x-page.header
         title="Cart List"
         :breadcrumbs="[
@@ -12,15 +12,25 @@
         ]"
     />
 
-
+    <div class="ul-page--stretch__body">
         <div class="ul-cart-container">
             @if(session('status'))
                 <div class="alert alert-success mb-4" role="alert">{{ session('status') }}</div>
             @endif
 
-            @if(!empty($loyaltyBanner))
-                <div class="alert alert-info mb-4" role="status">{{ $loyaltyBanner }}</div>
+            @if(session('coupon_success'))
+                <div class="alert alert-success mb-3" role="status">{{ session('coupon_success') }}</div>
             @endif
+
+            @if(session('coupon_status'))
+                <div class="alert alert-info mb-3" role="status">{{ session('coupon_status') }}</div>
+            @endif
+
+            @if(!empty($couponNotice))
+                <div class="alert alert-warning mb-3" role="status">{{ $couponNotice }}</div>
+            @endif
+
+            <div class="alert alert-info mb-4 {{ empty($loyaltyBanner) ? 'd-none' : '' }}" role="status" data-loyalty-banner>{{ $loyaltyBanner ?? '' }}</div>
 
             @if($lines->isEmpty())
                 <div class="py-5 text-center">
@@ -47,7 +57,7 @@
                                         $cartItem = $line['model'];
                                         $product = $line['product'];
                                     @endphp
-                                    <tr>
+                                    <tr data-remove-row>
                                         <td>
                                             <div class="ul-cart-product">
                                                 <a href="{{ $product ? route('shop.details', ['slug' => $product->slug ?? $product->id]) : '#' }}" class="ul-cart-product-img">
@@ -91,7 +101,7 @@
                                         <td><span class="ul-cart-item-subtotal">{{ $line['line_total_formatted'] }}</span></td>
                                         <td>
                                             <div class="ul-cart-item-remove">
-                                                <form action="{{ route('cart.items.destroy', $cartItem) }}" method="POST" onsubmit="return confirm('Remove this item from your bag?');">
+                                                <form action="{{ route('cart.items.destroy', $cartItem) }}" method="POST" class="js-remove-form" data-remove-type="cart" data-remove-selector="tr" data-confirm-title="Remove item?" data-confirm="Remove this item from your bag?" data-confirm-label="Remove" data-cancel-label="Keep item">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="submit" aria-label="Remove from cart"><i class="flaticon-close"></i></button>
@@ -108,10 +118,30 @@
                         <a href="{{ route('shop') }}" class="ul-btn ul-btn--soft">Continue Shopping</a>
                         <div class="ul-cart-coupon-code-form-wrapper ms-auto">
                             <span class="title">Have a code?</span>
-                            <form action="#" class="ul-cart-coupon-code-form">
-                                <input name="coupon-code" placeholder="Enter Coupon Code" type="text">
-                                <button class="mb-btn" type="button" disabled>Coming Soon</button>
+                            <div class="ul-cart-applied-coupon {{ $appliedCoupon ? '' : 'is-hidden' }}" data-cart-summary-block="coupon-pill">
+                                <div>
+                                    <span class="ul-cart-applied-coupon__eyebrow">Applied</span>
+                                    <strong class="ul-cart-applied-coupon__code" data-cart-summary="coupon-code">{{ $appliedCoupon->code ?? '' }}</strong>
+                                    <span class="ul-cart-applied-coupon__title" data-cart-summary="coupon-title">{{ $appliedCoupon->title ?? '' }}</span>
+                                </div>
+                                <form action="{{ route('cart.coupon.remove') }}" method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="ul-cart-applied-coupon__remove">Remove</button>
+                                </form>
+                            </div>
+                            <form action="{{ route('cart.coupon.apply') }}" method="POST" class="ul-cart-coupon-code-form">
+                                @csrf
+                                <input
+                                    name="code"
+                                    placeholder="Enter coupon code"
+                                    type="text"
+                                    value="{{ old('code', $couponCode) }}"
+                                    autocomplete="off"
+                                >
+                                <button class="ul-btn" type="submit">Apply code</button>
                             </form>
+                            <p class="small text-secondary mb-0 mt-2 {{ ($couponMessage && ! $appliedCoupon) ? '' : 'd-none' }}" data-cart-summary="coupon-message">{{ ($couponMessage && ! $appliedCoupon) ? $couponMessage : '' }}</p>
                         </div>
                     </div>
                 </div>
@@ -122,25 +152,32 @@
                         <div class="middle">
                             <div class="single-row">
                                 <span class="inner-title">Subtotal</span>
-                                <span class="number">{{ $summary['subtotal_formatted'] }}</span>
+                                <span class="number" data-cart-summary="subtotal">{{ $summary['subtotal_formatted'] }}</span>
                             </div>
 
                             <div class="single-row">
                                 <span class="inner-title">Shipping</span>
-                                <span class="number">{{ $summary['shipping_formatted'] }}</span>
+                                <span class="number" data-cart-summary="shipping">{{ $summary['shipping_formatted'] }}</span>
                             </div>
 
-                            @if($summary['discount'] > 0)
-                                <div class="single-row">
-                                    <span class="inner-title">Rewards applied</span>
-                                    <span class="number text-success">{{ $summary['discount_formatted'] }}</span>
-                                </div>
-                            @endif
+                            <div class="single-row single-row--discount {{ $summary['coupon_discount'] > 0 ? '' : 'is-hidden' }}" data-cart-summary-block="coupon">
+                                <span class="inner-title">Coupon savings</span>
+                                <span class="number text-success" data-cart-summary="coupon-discount">{{ $summary['coupon_discount_formatted'] ?? '' }}</span>
+                            </div>
+
+                            <div class="single-row single-row--discount {{ $summary['loyalty_discount'] > 0 ? '' : 'is-hidden' }}" data-cart-summary-block="loyalty">
+                                <span class="inner-title">Loyalty reward</span>
+                                <span class="number text-success" data-cart-summary="loyalty-discount">{{ $summary['loyalty_discount_formatted'] ?? '' }}</span>
+                            </div>
+                        </div>
+                        <div class="ul-cart-expense-overview__coupon {{ $appliedCoupon ? '' : 'is-hidden' }}" data-cart-summary-block="coupon-card">
+                            <span class="badge bg-primary-subtle text-primary text-uppercase" data-cart-summary="coupon-code">{{ $appliedCoupon->code ?? '' }}</span>
+                            <p class="mb-0 small text-secondary" data-cart-summary="coupon-description">{{ $appliedCoupon->description ?? 'Preferred guest savings active.' }}</p>
                         </div>
                         <div class="bottom">
                             <div class="single-row">
                                 <span class="inner-title">Total</span>
-                                <span class="number">{{ $summary['total_formatted'] }}</span>
+                                <span class="number" data-cart-summary="total">{{ $summary['total_formatted'] }}</span>
                             </div>
 
                             <a href="{{ route('checkout') }}" class="ul-cart-checkout-direct-btn">Proceed to checkout</a>
@@ -149,5 +186,6 @@
                 </div>
             @endif
         </div>
+    </div>
 </x-layout.page>
 @endsection

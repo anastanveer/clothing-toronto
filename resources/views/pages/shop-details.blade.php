@@ -12,6 +12,9 @@
     $discountPercent = $product->sale_price && $product->sale_price < $product->price
         ? round((1 - ($product->sale_price / $product->price)) * 100)
         : null;
+    $inWishlist = auth()->check() ? auth()->user()->wishlistItems()->where('product_id', $product->id)->exists() : false;
+    $cartQuantity = auth()->check() ? (int) auth()->user()->cartItems()->where('product_id', $product->id)->sum('quantity') : 0;
+    $cartQuantity = max(1, $cartQuantity);
 @endphp
 
 <x-layout.page>
@@ -140,19 +143,55 @@
 
                                 <div class="ul-product-details-option ul-product-details-quantity">
                                     <span class="title">Quantity</span>
-                                    <form action="#" class="ul-product-quantity-wrapper">
-                                        <input type="number" name="product-quantity" id="ul-product-details-quantity" class="ul-product-quantity" value="1" min="1" readonly>
+                                    <div class="ul-product-quantity-wrapper">
+                                        <input type="number" name="quantity" id="ul-product-details-quantity" class="ul-product-quantity" value="{{ $cartQuantity }}" min="1" max="10" form="product-detail-add-to-cart">
                                         <div class="btns">
                                             <button type="button" class="quantityIncreaseButton"><i class="flaticon-plus"></i></button>
                                             <button type="button" class="quantityDecreaseButton"><i class="flaticon-minus-sign"></i></button>
                                         </div>
-                                    </form>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="ul-product-details-actions">
-                                <button class="add-to-cart"><span class="icon"><i class="flaticon-shopping-bag"></i></span> Add to cart</button>
-                                <button class="add-to-wishlist"><span class="icon"><i class="flaticon-heart"></i></span> Add to wishlist</button>
+                                <form
+                                    action="{{ route('cart.items.store') }}"
+                                    method="POST"
+                                    class="ul-product-details-action js-product-action"
+                                    id="product-detail-add-to-cart"
+                                    data-action="cart"
+                                    data-product-id="{{ $product->id }}"
+                                    data-login-url="{{ route('login') }}"
+                                    data-success-label="Added to bag"
+                                >
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <button type="submit" class="ul-btn ul-btn--primary">
+                                        <span class="icon"><i class="flaticon-shopping-bag"></i></span>
+                                        <span>Add to bag</span>
+                                    </button>
+                                </form>
+
+                                <form
+                                    action="{{ route('wishlist.toggle') }}"
+                                    method="POST"
+                                    class="ul-product-details-action js-product-action"
+                                    data-action="wishlist"
+                                    data-product-id="{{ $product->id }}"
+                                    data-login-url="{{ route('login') }}"
+                                    data-success-label="Saved to wishlist"
+                                    data-active-label="Removed from wishlist"
+                                    data-label-active="Wishlist saved"
+                                    data-label-inactive="Add to wishlist"
+                                >
+                                    @csrf
+                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                    <button type="submit" aria-pressed="{{ $inWishlist ? 'true' : 'false' }}" class="ul-btn ul-btn--ghost {{ $inWishlist ? 'is-active' : '' }}">
+                                        <span class="icon"><i class="flaticon-heart"></i></span>
+                                        <span data-button-label>{{ $inWishlist ? 'Wishlist saved' : 'Add to wishlist' }}</span>
+                                    </button>
+                                </form>
+
                                 <div class="share-options">
                                     <button><i class="flaticon-facebook-app-symbol"></i></button>
                                     <button><i class="flaticon-twitter"></i></button>

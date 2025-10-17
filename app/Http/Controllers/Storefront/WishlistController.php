@@ -79,6 +79,7 @@ class WishlistController extends Controller
                 'status' => 'removed',
                 'message' => 'Removed from your wishlist.',
                 'in_wishlist' => false,
+                'remaining' => $request->user()->wishlistItems()->count(),
             ]);
         }
 

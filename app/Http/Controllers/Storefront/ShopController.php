@@ -73,12 +73,19 @@ class ShopController extends Controller
             ->where('is_published', true)
             ->firstOrFail();
 
+        $categoryParam = $request->query('category');
+        $category = null;
+
+        if ($categoryParam) {
+            $category = $this->normalizeCategory($categoryParam);
+        }
+
         $this->primeUserProductState();
-        $data = $this->resolveShopData($request, null, 12, $brand);
+        $data = $this->resolveShopData($request, $category, 12, $brand);
 
         return view('pages.shop', array_merge($data, [
             'categories' => self::CATEGORY_LABELS,
-            'activeCategory' => null,
+            'activeCategory' => $category,
             'activeBrand' => $brand,
         ]));
     }

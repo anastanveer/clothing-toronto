@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
+use App\Models\Coupon;
 use App\Models\Product;
+use App\Models\UserCoupon;
+use App\Support\CartSummary;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,49 +23,28 @@ class CartController extends Controller
             ->latest('added_at')
             ->get();
 
-        $lines = $items->map(function (CartItem $item) {
-            $product = $item->product;
-            $unitPrice = $product ? (float) ($product->sale_price ?? $product->price ?? 0) : 0.0;
-            $lineTotal = $unitPrice * $item->quantity;
+        $couponCode = $request->session()->get('cart.coupon');
+        $coupon = $couponCode ? Coupon::where('code', $couponCode)->first() : null;
+        $summary = CartSummary::build($request->user(), $items, $coupon);
 
-            return [
-                'model' => $item,
-                'product' => $product,
-                'unit_price' => $unitPrice,
-                'unit_price_formatted' => '$' . number_format($unitPrice, 2),
-                'line_total' => $lineTotal,
-                'line_total_formatted' => '$' . number_format($lineTotal, 2),
-                'in_stock' => ($product?->stock ?? 0) > 0,
-            ];
-        });
+        $couponNotice = null;
 
-        $subtotal = $lines->sum('line_total');
-        $shipping = $subtotal >= 250 ? 0 : ($subtotal > 0 ? 15 : 0);
-        $lifetimeSpend = (float) $request->user()->orders()->sum('total');
-        $loyaltyDiscount = $lifetimeSpend >= 500 ? min(50, $subtotal) : 0;
-        $discount = $loyaltyDiscount;
-        $total = max(0, $subtotal + $shipping - $discount);
-
-        $loyaltyBanner = null;
-        if ($discount > 0) {
-            $loyaltyBanner = 'Radiant Insider perk applied — $50 off this order.';
-        } elseif ($subtotal > 0 && $lifetimeSpend < 500) {
-            $loyaltyBanner = 'Spend $' . number_format(max(0, 500 - $lifetimeSpend), 0) . ' more lifetime to unlock $50 off every order.';
+        if ($couponCode && ! $coupon) {
+            $couponNotice = 'The saved coupon is no longer available.';
+            $request->session()->forget('cart.coupon');
+        } elseif ($coupon && ! $summary['applied_coupon'] && $summary['coupon_message']) {
+            $couponNotice = $summary['coupon_message'];
+            $request->session()->forget('cart.coupon');
         }
 
         return view('pages.cart', [
-            'lines' => $lines,
-            'summary' => [
-                'subtotal' => $subtotal,
-                'subtotal_formatted' => '$' . number_format($subtotal, 2),
-                'shipping' => $shipping,
-                'shipping_formatted' => $shipping > 0 ? '$' . number_format($shipping, 2) : 'Free',
-                'discount' => $discount,
-                'discount_formatted' => $discount > 0 ? '-$' . number_format($discount, 2) : '$0.00',
-                'total' => $total,
-                'total_formatted' => '$' . number_format($total, 2),
-            ],
-            'loyaltyBanner' => $loyaltyBanner,
+            'lines' => $summary['lines'],
+            'summary' => $summary['summary'],
+            'loyaltyBanner' => $summary['loyalty_banner'],
+            'appliedCoupon' => $summary['applied_coupon'],
+            'couponNotice' => $couponNotice,
+            'couponMessage' => $summary['coupon_message'],
+            'couponCode' => $summary['applied_coupon']?->code ?? $couponCode,
         ]);
     }
 
@@ -145,13 +127,114 @@ class CartController extends Controller
         $message = 'Removed from your bag.';
 
         if ($request->expectsJson()) {
+            $items = $request->user()
+                ->cartItems()
+                ->with('product')
+                ->latest('added_at')
+                ->get();
+
+            $couponCode = $request->session()->get('cart.coupon');
+            $coupon = $couponCode ? Coupon::where('code', $couponCode)->first() : null;
+            $summary = CartSummary::build($request->user(), $items, $coupon);
+            $lines = $summary['lines'];
+
+            if ($couponCode && ! $summary['applied_coupon']) {
+                $request->session()->forget('cart.coupon');
+            }
+
             return response()->json([
                 'status' => 'removed',
                 'message' => $message,
+                'summary' => $summary['summary'],
+                'coupon_message' => $summary['coupon_message'],
+                'loyalty_banner' => $summary['loyalty_banner'],
+                'coupon_applied' => (bool) $summary['applied_coupon'],
+                'coupon_code' => optional($summary['applied_coupon'])->code,
+                'coupon_title' => optional($summary['applied_coupon'])->title,
+                'coupon_description' => optional($summary['applied_coupon'])->description,
+                'lines_count' => $lines->count(),
             ]);
         }
 
         return back()->with('status', $message);
+    }
+
+    public function applyCoupon(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:50'],
+        ]);
+
+        $items = $request->user()
+            ->cartItems()
+            ->with('product')
+            ->get();
+
+        if ($items->isEmpty()) {
+            return back()
+                ->withInput($request->only('code'))
+                ->with('coupon_status', 'Add items to your bag before applying a coupon.');
+        }
+
+        $user = $request->user();
+
+        $code = strtoupper($data['code']);
+        $coupon = Coupon::where('code', $code)->first();
+
+        if (! $coupon) {
+            return back()
+                ->withInput($request->only('code'))
+                ->with('coupon_status', 'We couldn’t find that coupon. Double-check the code and try again.');
+        }
+
+        $assignment = null;
+
+        if ($coupon->requires_assignment) {
+            $assignment = $user->userCoupons()
+                ->where('coupon_id', $coupon->id)
+                ->first();
+
+            if (! $assignment) {
+                return back()
+                    ->withInput($request->only('code'))
+                    ->with('coupon_status', 'This perk is exclusive. Watch for it to unlock in your Glamer alerts.');
+            }
+
+            if (! $assignment->isAvailable()) {
+                $unlockMessage = $assignment->available_at
+                    ? 'This perk unlocks on ' . $assignment->available_at->format('M j, Y') . '. Check back soon!'
+                    : 'This perk is not ready just yet. Check your alerts for the unlock date.';
+
+                return back()
+                    ->withInput($request->only('code'))
+                    ->with('coupon_status', $unlockMessage);
+            }
+        }
+
+        $summary = CartSummary::build($user, $items, $coupon);
+
+        if (! $summary['applied_coupon']) {
+            $message = $summary['coupon_message'] ?? 'This coupon does not apply to your cart.';
+
+            return back()
+                ->withInput($request->only('code'))
+                ->with('coupon_status', $message);
+        }
+
+        $request->session()->put('cart.coupon', $coupon->code);
+
+        if ($assignment && $coupon->requires_assignment && $assignment->status !== UserCoupon::STATUS_AVAILABLE) {
+            $assignment->update(['status' => UserCoupon::STATUS_AVAILABLE]);
+        }
+
+        return back()->with('coupon_success', $coupon->title . ' is now applied to your bag.');
+    }
+
+    public function removeCoupon(Request $request): RedirectResponse
+    {
+        $request->session()->forget('cart.coupon');
+
+        return back()->with('coupon_status', 'Coupon removed from your bag.');
     }
 
     protected function ensureOwnsCartItem(Request $request, CartItem $cartItem): void

@@ -13,6 +13,42 @@ body {
     position: fixed;
 }
 
+.ul-app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.ul-app__content {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+
+    >main {
+        flex: 1 0 auto;
+    }
+}
+
+main.ul-page--stretch {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+
+    >* {
+        width: 100%;
+    }
+}
+
+.ul-page--stretch__body {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+
+    >* {
+        flex: 1 0 auto;
+    }
+}
+
 a,
 button,
 img,

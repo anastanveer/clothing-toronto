@@ -3,7 +3,7 @@
 @section('title', 'Wishlist')
 
 @section('content')
-<x-layout.page>
+<x-layout.page class="ul-page--stretch">
     <x-page.header
         title="Wishlist"
         :breadcrumbs="[
@@ -12,7 +12,7 @@
         ]"
     />
 
-
+    <div class="ul-page--stretch__body">
         <div class="ul-cart-container">
             <div class="cart-top">
                 <div class="text-center">
@@ -25,18 +25,18 @@
                     </div>
 
                     <!-- cart body -->
-                    <div>
-                        @if(session('status'))
-                            <div class="alert alert-success mb-4" role="alert">{{ session('status') }}</div>
-                        @endif
+                    @if(session('status'))
+                        <div class="alert alert-success mb-4" role="alert">{{ session('status') }}</div>
+                    @endif
 
-                        @forelse ($items as $item)
+                    <div class="{{ $items->isEmpty() ? 'd-none' : '' }}" data-wishlist-list>
+                        @foreach ($items as $item)
                             @php
                                 $product = $item->product;
                                 $price = $product?->sale_price ?? $product?->price ?? 0;
                                 $inStock = ($product?->stock ?? 0) > 0;
                             @endphp
-                            <div class="ul-cart-item">
+                            <div class="ul-cart-item" data-remove-row>
                                 <!-- product -->
                                 <div class="ul-cart-product">
                                     <a href="{{ route('shop.details', ['slug' => $product?->slug ?? $product?->id]) }}" class="ul-cart-product-img">
@@ -54,7 +54,7 @@
 
                                 <!-- remove -->
                                 <div class="ul-cart-item-remove">
-                                    <form action="{{ route('wishlist.destroy', $item) }}" method="POST" onsubmit="return confirm('Remove this item from your wishlist?');">
+                                    <form action="{{ route('wishlist.destroy', $item) }}" method="POST" class="js-remove-form" data-remove-type="wishlist" data-remove-selector=".ul-cart-item" data-confirm-title="Remove item?" data-confirm="Remove this item from your wishlist?" data-confirm-label="Remove" data-cancel-label="Keep item">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" aria-label="Remove from wishlist">
@@ -63,15 +63,15 @@
                                     </form>
                                 </div>
                             </div>
-                        @empty
-                            <div class="py-5">
-                                <p class="text-secondary mb-2">No saved looks just yet.</p>
-                                <a href="{{ route('shop') }}" class="ul-btn">Start shopping</a>
-                            </div>
-                        @endforelse
+                        @endforeach
+                    </div>
+                    <div class="py-5 {{ $items->isEmpty() ? '' : 'd-none' }}" data-wishlist-empty>
+                        <p class="text-secondary mb-2">No saved looks just yet.</p>
+                        <a href="{{ route('shop') }}" class="ul-btn">Start shopping</a>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 </x-layout.page>
 @endsection

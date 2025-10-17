@@ -148,6 +148,7 @@
     min-width: 0;
     position: relative;
     width: 100%;
+    min-height: 100vh;
 }
 
 .admin-body .admin-topbar {
@@ -290,9 +291,10 @@
 .admin-body .admin-main {
     flex: 1;
     width: 100%;
-    min-height: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     padding: clamp(2rem, 3vw, 3.25rem);
-    overflow-y: auto;
     background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(248, 250, 252, 0.95) 22%, rgba(255, 255, 255, 0.88) 100%);
     position: relative;
 }
@@ -463,6 +465,52 @@
     box-shadow: 0 28px 50px -32px rgba(15, 23, 42, 0.55);
 }
 
+.admin-dashboard-header {
+    gap: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.admin-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+}
+
+.admin-quick-actions__link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+    background: rgba(248, 250, 252, 0.92);
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    color: #0f172a;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.admin-quick-actions__link i {
+    display: inline-flex;
+    font-size: 1.1rem;
+    color: rgba(79, 70, 229, 0.95);
+}
+
+.admin-quick-actions__link:hover,
+.admin-quick-actions__link:focus {
+    transform: translateY(-2px);
+    border-color: rgba(79, 70, 229, 0.25);
+    box-shadow: 0 16px 30px -24px rgba(79, 70, 229, 0.35);
+}
+
+.admin-body .admin-mobile-scroll {
+    display: grid;
+}
+
+.admin-body .admin-mobile-stack {
+    gap: clamp(1.25rem, 2vw, 1.75rem);
+}
+
 @media (max-width: 1199.98px) {
     .admin-body .admin-topbar__actions {
         gap: 0.75rem;
@@ -470,6 +518,14 @@
 
     .admin-body .admin-topbar__badge {
         display: none;
+    }
+
+    .admin-body .admin-grid--stats {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+
+    .admin-body .admin-grid--two {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     }
 }
 
@@ -508,6 +564,84 @@
     .admin-body .admin-profile__name,
     .admin-body .admin-profile__role {
         display: none;
+    }
+
+    .admin-body .admin-grid--stats {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-body .admin-grid--two,
+    .admin-body .admin-mobile-stack {
+        grid-template-columns: 1fr !important;
+    }
+
+    .admin-quick-actions {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .admin-dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-dashboard-header .badge-soft {
+        order: -1;
+    }
+
+    .admin-body .admin-grid--stats {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-quick-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-body .admin-card {
+        overflow-x: auto;
+    }
+
+    .admin-body .admin-card table {
+        display: table;
+        width: 100%;
+        min-width: 560px;
+    }
+
+    .admin-body .admin-card table thead {
+        display: table-header-group;
+    }
+
+    .admin-body .admin-card table tbody tr {
+        display: table-row;
+        border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    .admin-body .admin-card table tbody td {
+        display: table-cell;
+        padding: 0.85rem 1rem;
+    }
+
+    .admin-body .admin-card table tbody td::before,
+    .admin-body .admin-card table tbody td[colspan]::before {
+        content: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .admin-body .admin-mobile-scroll {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(220px, 80vw);
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        gap: clamp(1rem, 3vw, 1.5rem);
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .admin-body .admin-mobile-scroll .admin-card {
+        scroll-snap-align: start;
+        min-width: 0;
     }
 }
 

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BlogPostController;
 use App\Http\Controllers\Admin\BrandController;
@@ -15,6 +16,10 @@ use App\Http\Controllers\Storefront\BlogController;
 use App\Http\Controllers\Storefront\UserDashboardController;
 use App\Http\Controllers\Storefront\WishlistController;
 use App\Http\Controllers\Storefront\CartController;
+use App\Http\Controllers\Storefront\HeaderMetricsController;
+use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\NotificationCenterController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 
 Route::get('/', HomeController::class)->name('home');
 
@@ -26,8 +31,9 @@ Route::get('/shop/details/{slug?}', [ShopController::class, 'show'])->name('shop
 Route::get('/shop/no-sidebar', [ShopController::class, 'noSidebar'])->name('shop.no-sidebar');
 Route::get('/shop/right-sidebar', [ShopController::class, 'rightSidebar'])->name('shop.right-sidebar');
 Route::get('/shop/brand/{slug}', [ShopController::class, 'brand'])->name('shop.brand');
+Route::get('/header/metrics', HeaderMetricsController::class)->name('header.metrics');
+Route::get('/header/inbox', NotificationCenterController::class)->name('header.inbox');
 
-Route::view('/checkout', 'pages.checkout')->name('checkout');
 Route::middleware('guest')->group(function () {
     Route::get('/login', [StorefrontAuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [StorefrontAuthController::class, 'login'])->name('login.submit');
@@ -40,8 +46,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [StorefrontAuthController::class, 'logout'])->name('logout');
     Route::get('/account/dashboard', [UserDashboardController::class, 'index'])->name('account.dashboard');
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
     Route::patch('/cart/items/{cartItem}', [CartController::class, 'update'])->name('cart.items.update');
     Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+    Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
+    Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::delete('/wishlist/{wishlistItem}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
@@ -78,6 +87,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 ->parameters(['brands' => 'brand']);
             Route::patch('brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])
                 ->name('brands.toggle-status');
+
+            Route::resource('coupons', AdminCouponController::class)
+                ->parameters(['coupons' => 'coupon'])
+                ->except(['show']);
+
+            Route::resource('announcements', AdminAnnouncementController::class)
+                ->parameters(['announcements' => 'announcement'])
+                ->except(['show']);
 
             Route::resource('blog', BlogPostController::class)->parameters([
                 'blog' => 'blog',

@@ -40,14 +40,13 @@
         :breadcrumbs="$breadcrumbs"
     />
 
-    <x-shop.brand-hero :brand="$activeBrand ?? null" />
-
     <!-- MAIN CONTENT SECTION START -->
     <div class="ul-inner-page-container">
         <div class="ul-inner-products-wrapper">
             <x-shop.filters-bar
                 :categories="$categories"
                 :active-category="$activeCategory"
+                :active-brand="$activeBrand ?? null"
                 :filters="$filters"
                 :active-filters="$activeFilters"
                 :sort-options="$filterOptions['sorts'] ?? []"

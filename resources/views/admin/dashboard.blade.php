@@ -4,7 +4,7 @@
 @section('page-title', 'Control Hub')
 
 @section('content')
-    <header class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <header class="admin-dashboard-header d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
             <h1 class="display-6 fw-bold">Control Hub</h1>
             <p class="text-secondary mb-0">Track performance, publish new drops, and keep your stories polished.</p>
@@ -12,11 +12,31 @@
         <span class="badge-soft">Fashion HQ</span>
     </header>
 
-    @php
+@php
         $catalogTotal = max(1, $metrics['total_products']);
-    @endphp
+        $ordersRoute = Route::has('admin.orders.index') ? route('admin.orders.index') : route('admin.dashboard');
+@endphp
 
-    <section class="admin-grid admin-grid--stats mb-4">
+    <section class="admin-quick-actions mb-4">
+        <a href="{{ route('admin.products.create') }}" class="admin-quick-actions__link">
+            <i class="flaticon-plus"></i>
+            <span>New product</span>
+        </a>
+        <a href="{{ route('admin.coupons.create') }}" class="admin-quick-actions__link">
+            <i class="flaticon-price-tag-1"></i>
+            <span>Create coupon</span>
+        </a>
+        <a href="{{ route('admin.blog.create') }}" class="admin-quick-actions__link">
+            <i class="flaticon-blogging"></i>
+            <span>Write blog</span>
+        </a>
+        <a href="{{ $ordersRoute }}" class="admin-quick-actions__link">
+            <i class="flaticon-shopping-bag"></i>
+            <span>View orders</span>
+        </a>
+    </section>
+
+    <section class="admin-grid admin-grid--stats admin-mobile-scroll mb-4">
         <div class="admin-card">
             <p class="text-uppercase text-secondary small mb-2">Catalog</p>
             <h2 class="display-6 fw-bold">{{ $metrics['total_products'] }}</h2>
@@ -69,7 +89,7 @@
         </div>
     </section>
 
-    <section class="admin-grid admin-grid--two mb-4">
+    <section class="admin-grid admin-grid--two admin-mobile-stack mb-4">
         <div class="admin-card h-100">
             <h2 class="admin-section-title">Category breakdown</h2>
             <ul class="list-unstyled mb-0">
@@ -96,7 +116,7 @@
         </div>
         <div class="admin-card h-100">
             <h2 class="admin-section-title">Team & editorial</h2>
-            <div class="admin-grid admin-grid--metrics">
+            <div class="admin-grid admin-grid--metrics admin-mobile-stack">
                 <div class="border rounded-4 px-3 py-4 h-100 text-center">
                     <p class="text-uppercase text-secondary small mb-1">Admin team</p>
                     <h3 class="h2 fw-bold mb-0">{{ $metrics['admins'] }}</h3>
@@ -118,7 +138,7 @@
         </div>
     </section>
 
-    <section class="admin-grid admin-grid--two mb-4">
+    <section class="admin-grid admin-grid--two admin-mobile-stack mb-4">
         <div class="admin-card h-100">
             <h2 class="admin-section-title">Customer engagement</h2>
             <ul class="list-unstyled mb-4">
@@ -180,10 +200,10 @@
                 <tbody>
                     @forelse($recentOrders as $order)
                         <tr>
-                            <td class="fw-semibold">{{ $order->reference }}</td>
-                            <td class="text-secondary small">{{ $order->user?->name ?? 'Guest' }}</td>
-                            <td><span class="{{ $order->status_class }}">{{ $order->status_label }}</span></td>
-                            <td class="text-end">${{ number_format($order->total, 2) }}</td>
+                            <td class="fw-semibold" data-label="Order">{{ $order->reference }}</td>
+                            <td class="text-secondary small" data-label="Customer">{{ $order->user?->name ?? 'Guest' }}</td>
+                            <td data-label="Status"><span class="{{ $order->status_class }}">{{ $order->status_label }}</span></td>
+                            <td class="text-end" data-label="Total">${{ number_format($order->total, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -206,9 +226,9 @@
                 <tbody>
                     @forelse($topSellers as $line)
                         <tr>
-                            <td class="fw-semibold">{{ $line->product?->name ?? 'Product removed' }}</td>
-                            <td>{{ $line->quantity_sold }}</td>
-                            <td class="text-end">${{ number_format($line->revenue_generated, 2) }}</td>
+                            <td class="fw-semibold" data-label="Product">{{ $line->product?->name ?? 'Product removed' }}</td>
+                            <td data-label="Units">{{ $line->quantity_sold }}</td>
+                            <td class="text-end" data-label="Revenue">${{ number_format($line->revenue_generated, 2) }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -220,7 +240,7 @@
         </div>
     </section>
 
-    <section class="admin-grid admin-grid--two">
+    <section of="ERROR"
         <div class="admin-card h-100">
             <h2 class="admin-section-title">Fresh products</h2>
             <table class="table align-middle mb-0">
@@ -235,10 +255,10 @@
                 <tbody>
                     @forelse($recentProducts as $product)
                         <tr>
-                            <td class="fw-semibold">{{ $product->name }}</td>
-                            <td><span class="status-pill {{ $product->status }}">{{ ucfirst($product->status) }}</span></td>
-                            <td>${{ number_format($product->sale_price ?? $product->price, 2) }}</td>
-                            <td class="text-end text-secondary small">{{ $product->updated_at->diffForHumans() }}</td>
+                            <td class="fw-semibold" data-label="Name">{{ $product->name }}</td>
+                            <td data-label="Status"><span class="status-pill {{ $product->status }}">{{ ucfirst($product->status) }}</span></td>
+                            <td data-label="Price">${{ number_format($product->sale_price ?? $product->price, 2) }}</td>
+                            <td class="text-end text-secondary small" data-label="Updated">{{ $product->updated_at->diffForHumans() }}</td>
                         </tr>
                     @empty
                         <tr>
@@ -261,9 +281,9 @@
                 <tbody>
                     @forelse($recentPosts as $post)
                         <tr>
-                            <td class="fw-semibold">{{ $post->title }}</td>
-                            <td><span class="status-pill {{ $post->status }}">{{ ucfirst($post->status) }}</span></td>
-                            <td class="text-secondary small">{{ optional($post->published_at)->format('M d, Y') ?? '—' }}</td>
+                            <td class="fw-semibold" data-label="Title">{{ $post->title }}</td>
+                            <td data-label="Status"><span class="status-pill {{ $post->status }}">{{ ucfirst($post->status) }}</span></td>
+                            <td class="text-secondary small" data-label="Published">{{ optional($post->published_at)->format('M d, Y') ?? '—' }}</td>
                         </tr>
                     @empty
                         <tr>
