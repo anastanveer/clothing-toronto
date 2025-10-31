@@ -26,7 +26,9 @@
             <div class="ul-header-bottom-wrapper">
                 <div class="header-bottom-left">
                     <div class="logo-container">
-                        <a href="{{ route('home') }}" class="d-inline-block"><img src="{{ asset('assets/img/logo.svg') }}" alt="logo" class="logo"></a>
+                        <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none ul-header-wordmark">
+                            <span>Toronto Textile</span>
+                        </a>
                     </div>
 
                     <div class="ul-header-search-form-wrapper flex-grow-1 flex-shrink-0">
@@ -34,14 +36,16 @@
                             <div class="dropdown-wrapper">
                                 <select name="search-category" id="ul-header-search-category">
                                     <option data-placeholder="true">Select Category</option>
-                                    <option value="1">Clothing</option>
-                                    <option value="2">Watches</option>
-                                    <option value="3">Jewellery</option>
-                                    <option value="4">Glasses</option>
+                                    <option value="apparel-all">All Apparel</option>
+                                    <option value="summer-staples">Summer Staples</option>
+                                    <option value="winter-layers">Winter Layers</option>
+                                    <option value="everyday-essentials">Everyday Essentials</option>
+                                    <option value="occasion-wear">Occasion Wear</option>
+                                    <option value="scarves-wraps">Scarves &amp; Wraps</option>
                                 </select>
                             </div>
                             <div class="ul-header-search-form-right">
-                                <input type="search" name="header-search" id="ul-header-search" placeholder="Search Here">
+                                <input type="search" name="header-search" id="ul-header-search" placeholder="Search clothing, looks, or fabrics">
                                 <button type="submit"><span class="icon"><i class="flaticon-search-interface-symbol"></i></span></button>
                             </div>
                         </form>

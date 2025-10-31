@@ -80,11 +80,26 @@
                         $adminName = optional($adminUser)->name ?? 'Glam Lead';
                         $adminInitial = strtoupper(substr($adminName, 0, 1) ?: 'G');
                     @endphp
-                    <div class="admin-profile">
-                        <div class="admin-profile__avatar">{{ $adminInitial }}</div>
-                        <div>
-                            <div class="admin-profile__name">{{ $adminName }}</div>
-                            <div class="admin-profile__role">{{ $adminUser?->isFullAdmin() ? 'Full admin' : ($adminUser?->isProductAdmin() ? 'Product admin' : 'Admin') }}</div>
+                    <div class="admin-profile" data-admin-profile>
+                        <button
+                            type="button"
+                            class="admin-profile__trigger"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                            data-admin-profile-trigger
+                        >
+                            <div class="admin-profile__avatar">{{ $adminInitial }}</div>
+                            <div class="admin-profile__info">
+                                <div class="admin-profile__name">{{ $adminName }}</div>
+                                <div class="admin-profile__role">{{ $adminUser?->isFullAdmin() ? 'Full admin' : ($adminUser?->isProductAdmin() ? 'Product admin' : 'Admin') }}</div>
+                            </div>
+                            <i class="flaticon-down" aria-hidden="true"></i>
+                        </button>
+                        <div class="admin-profile__menu" data-admin-profile-menu>
+                            <form action="{{ route('admin.logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="admin-profile__menu-item">Sign out</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -171,6 +186,39 @@
                     closeSidebar();
                 }
             });
+
+            const profile = document.querySelector('[data-admin-profile]');
+            const profileTrigger = profile?.querySelector('[data-admin-profile-trigger]');
+            const profileMenu = profile?.querySelector('[data-admin-profile-menu]');
+
+            if (profile && profileTrigger && profileMenu) {
+                const closeProfileMenu = () => {
+                    profileMenu.classList.remove('is-visible');
+                    profileTrigger.setAttribute('aria-expanded', 'false');
+                };
+
+                profileTrigger.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const isOpen = profileMenu.classList.toggle('is-visible');
+                    profileTrigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+
+                profileMenu.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                });
+
+                document.addEventListener('click', (event) => {
+                    if (!profile.contains(event.target)) {
+                        closeProfileMenu();
+                    }
+                });
+
+                window.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') {
+                        closeProfileMenu();
+                    }
+                });
+            }
         })();
     </script>
     @stack('scripts')

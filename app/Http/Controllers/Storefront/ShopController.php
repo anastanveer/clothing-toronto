@@ -18,6 +18,9 @@ class ShopController extends Controller
     protected array $wishlistProductIds = [];
     protected array $cartProductIds = [];
     protected bool $userProductStatePrimed = false;
+    protected ?Brand $primaryBrandCache = null;
+    protected bool $primaryBrandResolved = false;
+    protected ?bool $limitPrimaryCache = null;
 
     protected const CATEGORY_LABELS = [
         'men' => 'Men',
@@ -44,12 +47,19 @@ class ShopController extends Controller
     public function index(Request $request): View
     {
         $this->primeUserProductState();
-        $data = $this->resolveShopData($request, null, 12);
+        $primaryBrand = $this->primaryBrand();
+        $limitToPrimary = $this->shouldLimitToPrimaryBrand();
+        $data = $this->resolveShopData(
+            $request,
+            null,
+            12,
+            $limitToPrimary ? $primaryBrand : null
+        );
 
         return view('pages.shop', array_merge($data, [
             'categories' => self::CATEGORY_LABELS,
             'activeCategory' => null,
-            'activeBrand' => null,
+            'activeBrand' => $limitToPrimary ? $primaryBrand : null,
         ]));
     }
 
@@ -62,7 +72,7 @@ class ShopController extends Controller
         return view('pages.shop', array_merge($data, [
             'categories' => self::CATEGORY_LABELS,
             'activeCategory' => $category,
-            'activeBrand' => null,
+            'activeBrand' => $this->shouldLimitToPrimaryBrand() ? $this->primaryBrand() : null,
         ]));
     }
 
@@ -72,6 +82,14 @@ class ShopController extends Controller
             ->where('slug', $slug)
             ->where('is_published', true)
             ->firstOrFail();
+
+        if ($this->shouldLimitToPrimaryBrand()) {
+            $primary = $this->primaryBrand();
+
+            if ($primary && $brand->id !== $primary->id) {
+                abort(404);
+            }
+        }
 
         $categoryParam = $request->query('category');
         $category = null;
@@ -93,24 +111,38 @@ class ShopController extends Controller
     public function noSidebar(Request $request): View
     {
         $this->primeUserProductState();
-        $data = $this->resolveShopData($request, null, 16);
+        $primaryBrand = $this->primaryBrand();
+        $limitToPrimary = $this->shouldLimitToPrimaryBrand();
+        $data = $this->resolveShopData(
+            $request,
+            null,
+            16,
+            $limitToPrimary ? $primaryBrand : null
+        );
 
         return view('pages.shop-no-sidebar', array_merge($data, [
             'categories' => self::CATEGORY_LABELS,
             'activeCategory' => null,
-            'activeBrand' => null,
+            'activeBrand' => $limitToPrimary ? $primaryBrand : null,
         ]));
     }
 
     public function rightSidebar(Request $request): View
     {
         $this->primeUserProductState();
-        $data = $this->resolveShopData($request, null, 12);
+        $primaryBrand = $this->primaryBrand();
+        $limitToPrimary = $this->shouldLimitToPrimaryBrand();
+        $data = $this->resolveShopData(
+            $request,
+            null,
+            12,
+            $limitToPrimary ? $primaryBrand : null
+        );
 
         return view('pages.shop-right-sidebar', array_merge($data, [
             'categories' => self::CATEGORY_LABELS,
             'activeCategory' => null,
-            'activeBrand' => null,
+            'activeBrand' => $limitToPrimary ? $primaryBrand : null,
         ]));
     }
 
@@ -121,16 +153,30 @@ class ShopController extends Controller
         }
 
         $this->primeUserProductState();
-        $product = Product::where('status', 'published')
+        $primaryBrand = $this->primaryBrand();
+        $limitToPrimary = $this->shouldLimitToPrimaryBrand();
+
+        $productQuery = Product::where('status', 'published')
             ->whereHas('brand', fn (Builder $builder) => $builder->where('is_published', true))
-            ->with('brand')
+            ->with('brand');
+
+        if ($limitToPrimary && $primaryBrand) {
+            $productQuery->where('brand_id', $primaryBrand->id);
+        }
+
+        $product = $productQuery
             ->when($slug, fn ($query) => $query->where('slug', $slug))
             ->firstOrFail();
 
-        $relatedProducts = Product::where('status', 'published')
+        $relatedQuery = Product::where('status', 'published')
             ->whereHas('brand', fn (Builder $builder) => $builder->where('is_published', true))
-            ->whereKeyNot($product->getKey())
-            ->latest('updated_at')
+            ->whereKeyNot($product->getKey());
+
+        if ($limitToPrimary && $primaryBrand) {
+            $relatedQuery->where('brand_id', $primaryBrand->id);
+        }
+
+        $relatedProducts = $relatedQuery->latest('updated_at')
             ->take(6)
             ->get()
             ->map(fn (Product $related) => $this->transformProduct($related));
@@ -166,6 +212,14 @@ class ShopController extends Controller
         $brand = $product->brand;
         $isWishlisted = in_array($product->id, $this->wishlistProductIds, true);
         $isInCart = in_array($product->id, $this->cartProductIds, true);
+        $gallery = collect($product->gallery_images ?? [])
+            ->prepend($product->featured_image)
+            ->filter()
+            ->map(fn (string $path) => $this->resolveImageUrl($path))
+            ->filter()
+            ->unique()
+            ->values();
+        $primaryImage = $gallery->first() ?? $this->resolveImageUrl('assets/img/product-img-1.jpg');
 
         return [
             'id' => $product->id,
@@ -180,7 +234,8 @@ class ShopController extends Controller
             'price_value' => (float) $displayPrice,
             'original_price' => $sale && $sale < $price ? '$' . number_format($price, 2) : null,
             'discount' => $discountLabel,
-            'image' => $product->featured_image ? asset($product->featured_image) : asset('assets/img/product-img-1.jpg'),
+            'image' => $primaryImage,
+            'gallery' => $gallery->values()->all(),
             'details_url' => route('shop.details', ['slug' => $product->slug ?? $product->id]),
             'meta_title' => $product->meta_title,
             'meta_description' => $product->meta_description,
@@ -193,6 +248,7 @@ class ShopController extends Controller
             'in_cart' => $isInCart,
             'share_title' => $product->name,
             'share_url' => route('shop.details', ['slug' => $product->slug ?? $product->id]),
+            'image_alt' => $product->meta_title ?? $product->name,
         ];
     }
 
@@ -214,10 +270,17 @@ class ShopController extends Controller
             ];
         }
 
+        $limitToPrimary = $this->shouldLimitToPrimaryBrand();
+        $primaryBrand = $this->primaryBrand();
+
         $baseQuery = Product::query()
             ->with('brand')
             ->where('status', 'published')
             ->whereHas('brand', fn (Builder $builder) => $builder->where('is_published', true));
+
+        if ($limitToPrimary && $primaryBrand) {
+            $baseQuery->where('brand_id', $primaryBrand->id);
+        }
 
         if ($category) {
             $baseQuery->where('category', $category);
@@ -336,6 +399,14 @@ class ShopController extends Controller
                 ->where('slug', $brandSlugParam)
                 ->where('is_published', true)
                 ->first();
+        }
+
+        if ($this->shouldLimitToPrimaryBrand()) {
+            $primaryBrand = $this->primaryBrand();
+
+            if ($primaryBrand && (! $brandModel || $brandModel->id !== $primaryBrand->id)) {
+                $brandModel = ($brandOverride && $brandOverride->id === $primaryBrand->id) ? $brandOverride : null;
+            }
         }
 
         $priceChanged = ($min > $floor) || ($max < $ceiling);
@@ -479,6 +550,14 @@ class ShopController extends Controller
             ->get()
             ->groupBy('brand_id');
 
+        if ($this->shouldLimitToPrimaryBrand()) {
+            $primaryBrand = $this->primaryBrand();
+
+            if ($primaryBrand) {
+                $brandProducts = $brandProducts->filter(fn ($items, $brandId) => $brandId === $primaryBrand->id);
+            }
+        }
+
         if ($brandProducts->isEmpty()) {
             if ($filters['brand_id']) {
                 $fallbackBrand = Brand::query()
@@ -506,6 +585,14 @@ class ShopController extends Controller
             ->where('is_published', true)
             ->get()
             ->keyBy('id');
+
+        if ($this->shouldLimitToPrimaryBrand()) {
+            $primaryBrand = $this->primaryBrand();
+
+            if ($primaryBrand) {
+                $brands = $brands->filter(fn (Brand $brand) => $brand->id === $primaryBrand->id);
+            }
+        }
 
         return $brandProducts
             ->map(function (Collection $items, int $brandId) use ($brands, $filters) {
@@ -616,10 +703,15 @@ class ShopController extends Controller
         }
 
         if ($filters['brand']) {
-            $active->push([
-                'key' => 'brand',
-                'label' => 'Brand: ' . $filters['brand'],
-            ]);
+            $primaryBrand = $this->shouldLimitToPrimaryBrand() ? $this->primaryBrand() : null;
+            $allowed = ! $primaryBrand || $filters['brand_id'] === $primaryBrand->id;
+
+            if ($allowed) {
+                $active->push([
+                    'key' => 'brand',
+                    'label' => 'Brand: ' . $filters['brand'],
+                ]);
+            }
         }
 
         if ($filters['color']) {
@@ -675,6 +767,78 @@ class ShopController extends Controller
             2 => 2.0,
             default => 1.0,
         };
+    }
+
+    protected function resolveImageUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        if (Str::startsWith($path, ['http://', 'https://'])) {
+            return $path;
+        }
+
+        return asset($path);
+    }
+
+    protected function primaryBrand(): ?Brand
+    {
+        if ($this->primaryBrandResolved) {
+            return $this->primaryBrandCache;
+        }
+
+        $this->primaryBrandResolved = true;
+
+        if (! Schema::hasTable('brands')) {
+            return $this->primaryBrandCache = null;
+        }
+
+        $preferredSlug = config('catalog.primary_brand_slug');
+        $query = Brand::query()->where('is_published', true);
+
+        if ($preferredSlug) {
+            $preferredBrand = (clone $query)->where('slug', $preferredSlug)->first();
+
+            if ($preferredBrand) {
+                return $this->primaryBrandCache = $preferredBrand;
+            }
+        }
+
+        return $this->primaryBrandCache = $query->orderBy('name')->first();
+    }
+
+    protected function limitToPrimaryBrand(): bool
+    {
+        return (bool) config('catalog.limit_to_primary_brand', false);
+    }
+
+    protected function shouldLimitToPrimaryBrand(): bool
+    {
+        if ($this->limitPrimaryCache !== null) {
+            return $this->limitPrimaryCache;
+        }
+
+        if (! $this->limitToPrimaryBrand()) {
+            return $this->limitPrimaryCache = false;
+        }
+
+        $primaryBrand = $this->primaryBrand();
+
+        if (! $primaryBrand) {
+            return $this->limitPrimaryCache = false;
+        }
+
+        if (! Schema::hasTable('brands')) {
+            return $this->limitPrimaryCache = false;
+        }
+
+        $secondaryExists = Brand::query()
+            ->where('is_published', true)
+            ->whereKeyNot($primaryBrand->id)
+            ->exists();
+
+        return $this->limitPrimaryCache = ! $secondaryExists;
     }
 
     protected function normalizeCategory(string $category): string

@@ -219,16 +219,15 @@
                             $value = $option['value'];
                             $isActive = (int) ($filters['rating'] ?? 0) === (int) $value;
                             $label = $option['label'];
+                            $filledStars = max(0, min(5, (int) $value));
                         @endphp
                         <div class="single-rating-wrapper">
                             <label class="{{ $isActive ? 'active' : '' }}">
                                 <input type="radio" name="rating" value="{{ $value }}" @checked($isActive) data-filter-change-submit hidden>
                                 <span class="stars" aria-hidden="true">
-                                    <span><i class="flaticon-star"></i></span>
-                                    <span><i class="flaticon-star"></i></span>
-                                    <span><i class="flaticon-star"></i></span>
-                                    <span><i class="flaticon-star"></i></span>
-                                    <span><i class="flaticon-star"></i></span>
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <span><i class="{{ $i <= $filledStars ? 'flaticon-star' : 'flaticon-star-3' }}"></i></span>
+                                    @endfor
                                 </span>
                                 <span class="right">{{ ucfirst($label) }} <span class="count text-muted">({{ $option['count'] }})</span></span>
                             </label>

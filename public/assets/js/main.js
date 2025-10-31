@@ -1465,8 +1465,8 @@
     // product details slider
     new Swiper(".ul-product-details-img-slider", {
         slidesPerView: 1,
-        loop: true,
-        autoplay: true,
+        loop: false,
+        autoplay: false,
         spaceBetween: 0,
         navigation: {
             nextEl: "#ul-product-details-img-slider-nav .next",

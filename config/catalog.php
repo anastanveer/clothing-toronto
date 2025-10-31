@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'primary_brand_slug' => env('PRIMARY_BRAND_SLUG', 'khanabadosh'),
+    'limit_to_primary_brand' => (bool) env('LIMIT_TO_PRIMARY_BRAND', true),
+
     'products' => [
         'standard' => [
             [

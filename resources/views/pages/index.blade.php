@@ -5,6 +5,46 @@
 @section('content')
 
 <x-layout.page>
+    @php
+        $sliderCollection = collect($productSliderItems ?? []);
+        $brandName = $primaryBrand->name ?? 'Toronto Textile';
+        $brandTagline = $primaryBrand->tagline ?? 'Curated wardrobe essentials';
+        $brandSummary = $primaryBrand->summary ?? 'Hand-finished outfits designed for life between Karachi and Toronto.';
+        $brandShopUrl = $primaryBrand ? route('shop.brand', $primaryBrand->slug) : route('shop');
+        $startingPrice = data_get($sliderCollection->sortBy('price_value')->first(), 'price', '$129');
+        $heroSlides = [
+            [
+                'image' => asset('assets/img/banner-slide-1.jpg'),
+                'modifier' => '',
+                'subtitle' => $brandTagline,
+                'title' => "{$brandName} Signature Wardrobe",
+                'description' => $brandSummary,
+                'price' => $startingPrice,
+                'cta_label' => "Shop {$brandName}",
+                'cta_url' => $brandShopUrl,
+            ],
+            [
+                'image' => asset('assets/img/banner-slide-2.jpg'),
+                'modifier' => 'ul-banner-slide--2',
+                'subtitle' => "{$brandName} seasonal layers",
+                'title' => 'From desert evenings to downtown strolls',
+                'description' => 'Breathable fabrics and relaxed tailoring inspired by journeys between Karachi and Toronto.',
+                'price' => $startingPrice,
+                'cta_label' => "Browse {$brandName} outfits",
+                'cta_url' => $brandShopUrl,
+            ],
+            [
+                'image' => asset('assets/img/banner-slide-3.jpg'),
+                'modifier' => 'ul-banner-slide--3',
+                'subtitle' => "{$brandName} limited release",
+                'title' => 'Five outfits, countless journeys',
+                'description' => 'Mix, layer, and reimagine handcrafted staples shaped for nomads and celebrants alike.',
+                'price' => $startingPrice,
+                'cta_label' => "Reserve your {$brandName} look",
+                'cta_url' => $brandShopUrl,
+            ],
+        ];
+    @endphp
         <!-- BANNER SECTION START -->
         <div class="overflow-hidden">
             <div class="ul-container">
@@ -12,57 +52,32 @@
                     <div class="ul-banner-slider-wrapper">
                         <div class="ul-banner-slider swiper">
                             <div class="swiper-wrapper">
-                                <!-- single slide -->
-                                <div class="swiper-slide ul-banner-slide">
-                                    <div class="ul-banner-slide-img">
-                                        <img src="{{ asset('assets/img/banner-slide-1.jpg') }}" alt="Banner Image">
+                                @foreach($heroSlides as $index => $slide)
+                                    <div class="swiper-slide ul-banner-slide {{ $slide['modifier'] }}">
+                                        <div class="ul-banner-slide-img">
+                                            <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] }}">
+                                        </div>
+                                        <div
+                                            class="ul-banner-slide-txt"
+                                            data-animate="fade-up"
+                                            style="--animate-delay: {{ number_format($index * 0.06, 2, '.', '') }}s;"
+                                        >
+                                            @if(!empty($slide['subtitle']))
+                                                <span class="ul-banner-slide-sub-title">{{ $slide['subtitle'] }}</span>
+                                            @endif
+                                            <h1 class="ul-banner-slide-title">{{ $slide['title'] }}</h1>
+                                            @if(!empty($slide['description']))
+                                                <p class="ul-banner-slide-descr">{{ $slide['description'] }}</p>
+                                            @endif
+                                            @if(!empty($slide['price']))
+                                                <p class="ul-banner-slide-price">Starting From <span class="price">{{ $slide['price'] }}</span></p>
+                                            @endif
+                                            <a href="{{ $slide['cta_url'] }}" class="ul-btn">
+                                                {{ $slide['cta_label'] }} <i class="flaticon-up-right-arrow"></i>
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div class="ul-banner-slide-txt">
-                                        <span class="ul-banner-slide-sub-title">Perfect for Summer Evenings</span>
-                                        <h1 class="ul-banner-slide-title">Casual and Stylish for All Seasons</h1>
-                                        <p class="ul-banner-slide-price">Starting From <span class="price">$129</span></p>
-                                        <a href="{{ route('shop') }}" class="ul-btn">SHOP NOW <i class="flaticon-up-right-arrow"></i></a>
-                                    </div>
-                                </div>
-
-                                <!-- single slide -->
-                                <div class="swiper-slide ul-banner-slide ul-banner-slide--2">
-                                    <div class="ul-banner-slide-img">
-                                        <img src="{{ asset('assets/img/banner-slide-2.jpg') }}" alt="Banner Image">
-                                    </div>
-                                    <div class="ul-banner-slide-txt">
-                                        <span class="ul-banner-slide-sub-title">Perfect for Summer Evenings</span>
-                                        <h1 class="ul-banner-slide-title">Casual and Stylish for All Seasons</h1>
-                                        <p class="ul-banner-slide-price">Starting From <span class="price">$129</span></p>
-                                        <a href="{{ route('shop') }}" class="ul-btn">SHOP NOW <i class="flaticon-up-right-arrow"></i></a>
-                                    </div>
-                                </div>
-
-                                <!-- single slide -->
-                                <div class="swiper-slide ul-banner-slide ul-banner-slide--3">
-                                    <div class="ul-banner-slide-img">
-                                        <img src="{{ asset('assets/img/banner-slide-3.jpg') }}" alt="Banner Image">
-                                    </div>
-                                    <div class="ul-banner-slide-txt">
-                                        <span class="ul-banner-slide-sub-title">Perfect for Summer Evenings</span>
-                                        <h1 class="ul-banner-slide-title">Casual and Stylish for All Seasons</h1>
-                                        <p class="ul-banner-slide-price">Starting From <span class="price">$129</span></p>
-                                        <a href="{{ route('shop') }}" class="ul-btn">SHOP NOW <i class="flaticon-up-right-arrow"></i></a>
-                                    </div>
-                                </div>
-
-                                <!-- single slide -->
-                                <!-- <div class="swiper-slide ul-banner-slide">
-                                    <div class="ul-banner-slide-img">
-                                        <img src="{{ asset('assets/img/banner-slide-1.jpg') }}" alt="Banner Image">
-                                    </div>
-                                    <div class="ul-banner-slide-txt">
-                                        <span class="ul-banner-slide-sub-title">Perfect for Summer Evenings</span>
-                                        <h1 class="ul-banner-slide-title">Casual and Stylish for All Seasons</h1>
-                                        <p class="ul-banner-slide-price">Starting From <span class="price">$129</span></p>
-                                        <a href="{{ route('shop') }}" class="ul-btn">SHOP NOW <i class="flaticon-up-right-arrow"></i></a>
-                                    </div>
-                                </div> -->
+                                @endforeach
                             </div>
 
                             <!-- slider navigation -->
@@ -78,18 +93,11 @@
                     <div class="ul-banner-img-slider-wrapper">
                         <div class="ul-banner-img-slider swiper">
                             <div class="swiper-wrapper">
-                                <div class="swiper-slide">
-                                    <img src="{{ asset('assets/img/banner-img-slide-1.jpg') }}" alt="Banner Image">
-                                </div>
-                                <div class="swiper-slide">
-                                    <img src="{{ asset('assets/img/banner-img-slide-2.jpg') }}" alt="Banner Image">
-                                </div>
-                                <div class="swiper-slide">
-                                    <img src="{{ asset('assets/img/banner-img-slide-3.jpg') }}" alt="Banner Image">
-                                </div>
-                                <!-- <div class="swiper-slide">
-                                    <img src="{{ asset('assets/img/banner-img-slide-1.jpg') }}" alt="Banner Image">
-                                </div> -->
+                                @foreach($heroSlides as $slide)
+                                    <div class="swiper-slide">
+                                        <img src="{{ $slide['image'] }}" alt="{{ $slide['title'] }} inspiration">
+                                    </div>
+                                @endforeach
                             </div>
                         </div>
                     </div>
@@ -240,18 +248,23 @@
                             <h2 class="ul-section-title">Shopping Every Day</h2>
                         </div>
 
-                        <div class="right"><a href="#" class="ul-btn">More Collection <i class="flaticon-up-right-arrow"></i></a></div>
+                        <div class="right"><a href="{{ route('shop') }}" class="ul-btn">More Collection <i class="flaticon-up-right-arrow"></i></a></div>
                     </div>
 
-                    <div class="row ul-bs-row">
+                    @php
+                        $menCategoryUrl = route('shop.category', ['category' => 'men']);
+                        $womenCategoryUrl = route('shop.category', ['category' => 'women']);
+                    @endphp
+
+                    <div class="row ul-bs-row align-items-stretch g-4 g-lg-5 mb-5">
                         <div class="col-lg-3 col-md-4 col-12">
-                            <div class="ul-products-sub-banner">
+                            <div class="ul-products-sub-banner text-start">
                                 <div class="ul-products-sub-banner-img">
                                     <img src="{{ asset('assets/img/products-sub-banner-1.jpg') }}" alt="Sub Banner Image">
                                 </div>
-                                <div class="ul-products-sub-banner-txt">
+                                <div class="ul-products-sub-banner-txt text-start">
                                     <h3 class="ul-products-sub-banner-title">Trending Now Only This Weekend!</h3>
-                                    <a href="{{ route('shop') }}" class="ul-btn">Shop Now <i class="flaticon-up-right-arrow"></i></a>
+                                    <a href="{{ $menCategoryUrl }}" class="ul-btn">Shop Now <i class="flaticon-up-right-arrow"></i></a>
                                 </div>
                             </div>
                         </div>
@@ -259,7 +272,7 @@
                         <div class="col-lg-9 col-md-8 col-12">
                             <div class="swiper ul-products-slider-1">
                                 <div class="swiper-wrapper">
-                                    @foreach($productSliderItems->take(8) as $product)
+                                    @foreach($menProductSliderItems->take(8) as $product)
                                         <div class="swiper-slide">
                                             <x-product.card :product="$product" />
                                         </div>
@@ -272,23 +285,25 @@
                                 <button class="next"><i class="flaticon-arrow-point-to-right"></i></button>
                             </div>
                         </div>
+                    </div>
 
+                    <div class="row ul-bs-row align-items-stretch g-4 g-lg-5 flex-lg-row-reverse ul-bs-row--women mt-4">
                         <div class="col-lg-3 col-md-4 col-12">
-                            <div class="ul-products-sub-banner">
+                            <div class="ul-products-sub-banner text-start">
                                 <div class="ul-products-sub-banner-img">
                                     <img src="{{ asset('assets/img/products-sub-banner-2.jpg') }}" alt="Sub Banner Image">
                                 </div>
-                                <div class="ul-products-sub-banner-txt">
+                                <div class="ul-products-sub-banner-txt text-start">
                                     <h3 class="ul-products-sub-banner-title">Trending Now Only This Weekend!</h3>
-                                    <a href="{{ route('shop') }}" class="ul-btn">Shop Now <i class="flaticon-up-right-arrow"></i></a>
+                                    <a href="{{ $womenCategoryUrl }}" class="ul-btn">Shop Now <i class="flaticon-up-right-arrow"></i></a>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-lg-9 col-md-8 col-12">
-                            <div class="swiper ul-products-slider-2">
+                            <div class="swiper ul-products-slider-2" dir="rtl">
                                 <div class="swiper-wrapper">
-                                    @foreach($productSliderItems->slice(3, 8) as $product)
+                                    @foreach($womenProductSliderItems->take(8) as $product)
                                         <div class="swiper-slide">
                                             <x-product.card :product="$product" />
                                         </div>
@@ -297,8 +312,8 @@
                             </div>
 
                             <div class="ul-products-slider-nav ul-products-slider-2-nav">
-                                <button class="prev"><i class="flaticon-left-arrow"></i></button>
-                                <button class="next"><i class="flaticon-arrow-point-to-right"></i></button>
+                                <button class="prev"><i class="flaticon-arrow-point-to-right"></i></button>
+                                <button class="next"><i class="flaticon-left-arrow"></i></button>
                             </div>
                         </div>
                     </div>
@@ -314,22 +329,22 @@
                 <div class="ul-inner-container">
                     <div class="ul-ad-content">
                         <div class="ul-ad-txt">
-                            <span class="ul-ad-sub-title">Trending Products</span>
-                            <h2 class="ul-section-title">Get 30% Discount On All Hudis!</h2>
+                            <span class="ul-ad-sub-title">{{ $brandName }} spotlight</span>
+                            <h2 class="ul-section-title">Nomad essentials, handcrafted in limited batches</h2>
                             <div class="ul-ad-categories">
-                                <span class="category"><span><i class="flaticon-check-mark"></i></span>Zara</span>
-                                <span class="category"><span><i class="flaticon-check-mark"></i></span>Gucie</span>
-                                <span class="category"><span><i class="flaticon-check-mark"></i></span>Publo</span>
-                                <span class="category"><span><i class="flaticon-check-mark"></i></span>Men's</span>
+                                <span class="category"><span><i class="flaticon-check-mark"></i></span>Handloom cotton</span>
+                                <span class="category"><span><i class="flaticon-check-mark"></i></span>Desert dyes</span>
+                                <span class="category"><span><i class="flaticon-check-mark"></i></span>Travel ready</span>
                                 <span class="category"><span><i class="flaticon-check-mark"></i></span>Women's</span>
                             </div>
+                            <p class="ul-sub-banner-descr">{{ $brandSummary }}</p>
                         </div>
 
                         <div class="ul-ad-img">
-                            <img src="{{ asset('assets/img/ad-img.png') }}" alt="Ad Image">
+                            <img src="{{ asset('assets/img/ad-img.png') }}" alt="{{ $brandName }} showcase">
                         </div>
 
-                        <a href="{{ route('shop') }}" class="ul-btn">Check Discount <i class="flaticon-up-right-arrow"></i></a>
+                        <a href="{{ $brandShopUrl }}" class="ul-btn">Explore {{ $brandName }} <i class="flaticon-up-right-arrow"></i></a>
                     </div>
                 </div>
             </section>
@@ -393,13 +408,13 @@
                             <div class="ul-sub-banner ">
                                 <div class="ul-sub-banner-txt">
                                     <div class="top">
-                                        <span class="ul-ad-sub-title">Trending Products</span>
-                                        <h3 class="ul-sub-banner-title">Women's collections</h3>
-                                        <p class="ul-sub-banner-descr">Up to 22% off Gimbals</p>
+                                        <span class="ul-ad-sub-title">{{ $brandName }} edit</span>
+                                        <h3 class="ul-sub-banner-title">Nomad co-ords</h3>
+                                        <p class="ul-sub-banner-descr">Handwoven sets that move with you from souk to skyline.</p>
                                     </div>
 
                                     <div class="bottom">
-                                        <a href="{{ route('shop') }}" class="ul-sub-banner-btn">Collection <i class="flaticon-up-right-arrow"></i></a>
+                                        <a href="{{ $brandShopUrl }}" class="ul-sub-banner-btn">Shop the look <i class="flaticon-up-right-arrow"></i></a>
                                     </div>
                                 </div>
 
@@ -414,13 +429,13 @@
                             <div class="ul-sub-banner ul-sub-banner--2">
                                 <div class="ul-sub-banner-txt">
                                     <div class="top">
-                                        <span class="ul-ad-sub-title">Trending Products</span>
-                                        <h3 class="ul-sub-banner-title">Men's collections</h3>
-                                        <p class="ul-sub-banner-descr">Up to 22% off Gimbals</p>
+                                        <span class="ul-ad-sub-title">{{ $brandName }} nights</span>
+                                        <h3 class="ul-sub-banner-title">Desert evening layers</h3>
+                                        <p class="ul-sub-banner-descr">Indigo overcoats, charcoal kurtas, and statement shawls.</p>
                                     </div>
 
                                     <div class="bottom">
-                                        <a href="{{ route('shop') }}" class="ul-sub-banner-btn">Collection <i class="flaticon-up-right-arrow"></i></a>
+                                        <a href="{{ $brandShopUrl }}" class="ul-sub-banner-btn">Explore pieces <i class="flaticon-up-right-arrow"></i></a>
                                     </div>
                                 </div>
 
@@ -435,13 +450,13 @@
                             <div class="ul-sub-banner ul-sub-banner--3">
                                 <div class="ul-sub-banner-txt">
                                     <div class="top">
-                                        <span class="ul-ad-sub-title">Trending Products</span>
-                                        <h3 class="ul-sub-banner-title">Kid's collections</h3>
-                                        <p class="ul-sub-banner-descr">Up to 22% off Gimbals</p>
+                                        <span class="ul-ad-sub-title">{{ $brandName }} accessories</span>
+                                        <h3 class="ul-sub-banner-title">Carry Karachi to Toronto</h3>
+                                        <p class="ul-sub-banner-descr">Hand-finished totes, wraps, and keepsakes ready for takeoff.</p>
                                     </div>
 
                                     <div class="bottom">
-                                        <a href="{{ route('shop') }}" class="ul-sub-banner-btn">Collection <i class="flaticon-up-right-arrow"></i></a>
+                                        <a href="{{ $brandShopUrl }}" class="ul-sub-banner-btn">Discover accents <i class="flaticon-up-right-arrow"></i></a>
                                     </div>
                                 </div>
 

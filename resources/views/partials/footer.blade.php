@@ -101,7 +101,10 @@
             </div>
 
             <div class="ul-footer-middle-widget align-self-center">
-                <a href="{{ route('home') }}"><img src="{{ asset('assets/img/logo-white.svg') }}" alt="logo" class="logo"></a>
+                <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none ul-footer-wordmark">
+                    {{-- <img src="{{ asset('assets/img/logo-white.svg') }}" alt="Toronto Textile logo" class="logo"> --}}
+                    <span>Toronto Textile</span>
+                </a>
             </div>
         </div>
 

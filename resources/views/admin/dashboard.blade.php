@@ -240,7 +240,7 @@
         </div>
     </section>
 
-    <section of="ERROR"
+    <section class="admin-grid admin-grid--two mb-4">
         <div class="admin-card h-100">
             <h2 class="admin-section-title">Fresh products</h2>
             <table class="table align-middle mb-0">

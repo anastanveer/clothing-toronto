@@ -4,17 +4,67 @@
 
 @section('content')
 @php
-    $galleryImages = $product->gallery_images ?? [];
-    if (empty($galleryImages) && $product->featured_image) {
-        $galleryImages = [$product->featured_image];
+    $galleryImages = collect($product->gallery_images ?? [])
+        ->prepend($product->featured_image)
+        ->filter()
+        ->map(function ($image) {
+            return \Illuminate\Support\Str::startsWith($image, ['http://', 'https://'])
+                ? $image
+                : asset($image);
+        })
+        ->unique()
+        ->values();
+
+    if ($galleryImages->isEmpty()) {
+        $galleryImages = collect([asset('assets/img/product-details-1.jpg')]);
     }
+
     $displayPrice = $product->sale_price ?? $product->price;
     $discountPercent = $product->sale_price && $product->sale_price < $product->price
         ? round((1 - ($product->sale_price / $product->price)) * 100)
         : null;
+
     $inWishlist = auth()->check() ? auth()->user()->wishlistItems()->where('product_id', $product->id)->exists() : false;
     $cartQuantity = auth()->check() ? (int) auth()->user()->cartItems()->where('product_id', $product->id)->sum('quantity') : 0;
     $cartQuantity = max(1, $cartQuantity);
+
+    $colorPalette = collect($product->options['colors'] ?? [])
+        ->push($product->primary_color)
+        ->filter()
+        ->unique()
+        ->values();
+
+    $colorSwatches = $colorPalette->map(function ($label) {
+        $label = trim((string) $label);
+        $map = [
+            'Black' => '#111827',
+            'White' => '#ffffff',
+            'Olive' => '#4d7c0f',
+            'Stone' => '#a8a29e',
+            'Sand' => '#f5deb3',
+            'Navy' => '#1e3a8a',
+            'Blush' => '#f9a8d4',
+            'Burgundy' => '#7f1d1d',
+            'Emerald' => '#047857',
+            'Mustard' => '#d97706',
+            'Green' => '#15803d',
+            'Blue' => '#2563eb',
+            'Red' => '#ef4444',
+        ];
+
+        return [
+            'label' => $label,
+            'value' => $map[$label] ?? '#e2e8f0',
+        ];
+    });
+
+    $sizeOptions = collect($product->options['sizes'] ?? ['S', 'M', 'L', 'XL', 'XXL'])
+        ->filter()
+        ->unique()
+        ->values();
+
+    $rawDescription = $product->description;
+    $hasMarkup = is_string($rawDescription) && \Illuminate\Support\Str::contains($rawDescription, ['<p', '<ul', '<ol', '<br', '<strong', '<em']);
 @endphp
 
 <x-layout.page>
@@ -34,19 +84,36 @@
             <div class="ul-product-details-top">
                 <div class="row ul-bs-row row-cols-lg-2 row-cols-1 align-items-center">
                     <div class="col">
-                        <div class="ul-product-details-img">
-                            <div class="ul-product-details-img-slider swiper">
-                                <div class="swiper-wrapper">
-                                    @forelse($galleryImages as $image)
-                                        <div class="swiper-slide"><img src="{{ asset($image) }}" alt="{{ $product->name }}"></div>
-                                    @empty
-                                        <div class="swiper-slide"><img src="{{ asset('assets/img/product-details-1.jpg') }}" alt="{{ $product->name }}"></div>
-                                    @endforelse
+                        <div class="ul-product-details-wrapper">
+                            @if($galleryImages->count() > 1)
+                                <div class="ul-product-details-thumb-stack" role="tablist">
+                                    @foreach($galleryImages as $index => $image)
+                                        <button
+                                            type="button"
+                                            class="ul-product-details-thumb {{ $loop->first ? 'is-active' : '' }}"
+                                            data-detail-thumb="{{ $index }}"
+                                            aria-label="View image {{ $loop->iteration }}"
+                                        >
+                                            <img src="{{ $image }}" alt="{{ $product->name }} thumbnail {{ $loop->iteration }}" loading="lazy">
+                                        </button>
+                                    @endforeach
                                 </div>
+                            @endif
 
-                                <div class="ul-product-details-img-slider-nav" id="ul-product-details-img-slider-nav">
-                                    <button class="prev"><i class="flaticon-left-arrow"></i></button>
-                                    <button class="next"><i class="flaticon-arrow-point-to-right"></i></button>
+                            <div class="ul-product-details-img">
+                                <div class="ul-product-details-img-slider swiper">
+                                    <div class="swiper-wrapper">
+                                        @foreach($galleryImages as $index => $image)
+                                            <div class="swiper-slide" data-detail-zoom>
+                                                <img src="{{ $image }}" alt="{{ $product->name }} image {{ $loop->iteration }}" loading="lazy">
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <div class="ul-product-details-img-slider-nav" id="ul-product-details-img-slider-nav">
+                                        <button class="prev" type="button" aria-label="Previous image"><i class="flaticon-left-arrow"></i></button>
+                                        <button class="next" type="button" aria-label="Next image"><i class="flaticon-arrow-point-to-right"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -60,34 +127,6 @@
                                 $ratingCopy = $averageRating > 0
                                     ? $averageRating . ' / 5' . ($reviewsCount ? ' · ' . $reviewsCount . ' review' . ($reviewsCount === 1 ? '' : 's') : '')
                                     : 'Be the first to review';
-                                $colorPalette = collect($product->options['colors'] ?? [])
-                                    ->push($product->primary_color)
-                                    ->filter()
-                                    ->unique()
-                                    ->values();
-                                $colorSwatches = $colorPalette->map(function ($label) {
-                                    $label = trim((string) $label);
-                                    $map = [
-                                        'Black' => '#111827',
-                                        'White' => '#ffffff',
-                                        'Olive' => '#4d7c0f',
-                                        'Stone' => '#a8a29e',
-                                        'Sand' => '#f5deb3',
-                                        'Navy' => '#1e3a8a',
-                                        'Blush' => '#f9a8d4',
-                                        'Burgundy' => '#7f1d1d',
-                                        'Emerald' => '#047857',
-                                        'Mustard' => '#d97706',
-                                        'Green' => '#15803d',
-                                        'Blue' => '#2563eb',
-                                        'Red' => '#ef4444',
-                                    ];
-
-                                    return [
-                                        'label' => $label,
-                                        'value' => $map[$label] ?? '#e2e8f0',
-                                    ];
-                                });
                             @endphp
 
                             <div class="ul-product-details-rating d-flex align-items-center gap-3">
@@ -112,18 +151,20 @@
                             <p class="ul-product-details-descr">{{ $product->summary ?? 'Tailored for confident silhouettes and effortless layering.' }}</p>
 
                             <div class="ul-product-details-options">
-                                <div class="ul-product-details-option ul-product-details-sizes">
-                                    <span class="title">Size</span>
-                                    <form action="#" class="variants">
-                                        @foreach(['S', 'M', 'L', 'XL', 'XXL'] as $size)
-                                            @php $inputId = 'ul-product-details-size-' . $loop->index; @endphp
-                                            <label for="{{ $inputId }}">
-                                                <input type="radio" name="product-size" id="{{ $inputId }}" @checked($loop->first) hidden>
-                                                <span class="size-btn">{{ $size }}</span>
-                                            </label>
-                                        @endforeach
-                                    </form>
-                                </div>
+                                @if($sizeOptions->isNotEmpty())
+                                    <div class="ul-product-details-option ul-product-details-sizes">
+                                        <span class="title">Size</span>
+                                        <form action="#" class="variants">
+                                            @foreach($sizeOptions as $index => $size)
+                                                @php $inputId = 'ul-product-details-size-' . $index; @endphp
+                                                <label for="{{ $inputId }}">
+                                                    <input type="radio" name="product-size" id="{{ $inputId }}" @checked($loop->first) hidden>
+                                                    <span class="size-btn">{{ strtoupper($size) }}</span>
+                                                </label>
+                                            @endforeach
+                                        </form>
+                                    </div>
+                                @endif
 
                                 @if($colorSwatches->isNotEmpty())
                                     <div class="ul-product-details-option ul-product-details-colors">
@@ -193,10 +234,10 @@
                                 </form>
 
                                 <div class="share-options">
-                                    <button><i class="flaticon-facebook-app-symbol"></i></button>
-                                    <button><i class="flaticon-twitter"></i></button>
-                                    <button><i class="flaticon-linkedin-big-logo"></i></button>
-                                    <a href="#"><i class="flaticon-youtube"></i></a>
+                                    <button type="button" aria-label="Share on Facebook"><i class="flaticon-facebook-app-symbol"></i></button>
+                                    <button type="button" aria-label="Share on Twitter"><i class="flaticon-twitter"></i></button>
+                                    <button type="button" aria-label="Share on LinkedIn"><i class="flaticon-linkedin-big-logo"></i></button>
+                                    <a href="#" aria-label="Watch styling video"><i class="flaticon-youtube"></i></a>
                                 </div>
                             </div>
                         </div>
@@ -207,7 +248,11 @@
             <div class="ul-product-details-bottom">
                 <div class="ul-product-details-long-descr-wrapper">
                     <h3 class="ul-product-details-inner-title">Item Description</h3>
-                    <p>{!! nl2br(e($product->description ?? 'A signature wardrobe essential crafted to elevate any ensemble. Pair with relaxed tailoring or bold accessories for a complete look.')) !!}</p>
+                    @if($rawDescription)
+                        {!! $hasMarkup ? $rawDescription : nl2br(e($rawDescription)) !!}
+                    @else
+                        <p>A signature wardrobe essential crafted to elevate any ensemble. Pair with relaxed tailoring or bold accessories for a complete look.</p>
+                    @endif
                 </div>
 
                 <div class="ul-product-details-reviews">
@@ -245,3 +290,91 @@
     </div>
 </x-layout.page>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sliderEl = document.querySelector('.ul-product-details-img-slider');
+        if (!sliderEl) {
+            return;
+        }
+
+        const slides = Array.from(sliderEl.querySelectorAll('[data-detail-zoom]'));
+        const thumbs = Array.from(document.querySelectorAll('[data-detail-thumb]'));
+
+        const resetSlide = (slide) => {
+            const image = slide.querySelector('img');
+            if (!image) {
+                return;
+            }
+
+            slide.classList.remove('is-zoomed');
+            image.style.transformOrigin = '50% 50%';
+        };
+
+        slides.forEach((slide) => {
+            const image = slide.querySelector('img');
+            if (!image) {
+                return;
+            }
+
+            slide.addEventListener('mouseenter', () => slide.classList.add('is-zoomed'));
+            slide.addEventListener('mousemove', (event) => {
+                if (!slide.classList.contains('is-zoomed')) {
+                    return;
+                }
+
+                const rect = slide.getBoundingClientRect();
+                const x = ((event.clientX - rect.left) / rect.width) * 100;
+                const y = ((event.clientY - rect.top) / rect.height) * 100;
+                image.style.transformOrigin = `${x}% ${y}%`;
+            });
+            slide.addEventListener('mouseleave', () => resetSlide(slide));
+            slide.addEventListener('touchend', () => resetSlide(slide));
+        });
+
+        const updateThumbs = (activeIndex) => {
+            thumbs.forEach((thumb) => {
+                const index = Number(thumb.dataset.detailThumb || 0);
+                thumb.classList.toggle('is-active', index === activeIndex);
+            });
+        };
+
+        const resolveSwiper = () => {
+            const swiper = sliderEl.swiper;
+            if (!swiper) {
+                setTimeout(resolveSwiper, 120);
+                return;
+            }
+
+            const total = thumbs.length;
+
+            if (total) {
+                updateThumbs(swiper.realIndex % total);
+                swiper.on('slideChange', () => {
+                    updateThumbs(swiper.realIndex % total);
+                    const active = swiper.slides[swiper.activeIndex];
+                    if (active && active.hasAttribute('data-detail-zoom')) {
+                        resetSlide(active);
+                    }
+                });
+
+                thumbs.forEach((thumb) => {
+                    const index = Number(thumb.dataset.detailThumb || 0);
+                    thumb.addEventListener('click', () => swiper.slideToLoop(index));
+                    thumb.addEventListener('mouseenter', () => swiper.slideToLoop(index));
+                });
+            } else {
+                swiper.on('slideChange', () => {
+                    const active = swiper.slides[swiper.activeIndex];
+                    if (active && active.hasAttribute('data-detail-zoom')) {
+                        resetSlide(active);
+                    }
+                });
+            }
+        };
+
+        resolveSwiper();
+    });
+</script>
+@endpush
