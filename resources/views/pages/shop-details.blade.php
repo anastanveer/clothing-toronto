@@ -19,9 +19,16 @@
         $galleryImages = collect([asset('assets/img/product-details-1.jpg')]);
     }
 
-    $displayPrice = $product->sale_price ?? $product->price;
-    $discountPercent = $product->sale_price && $product->sale_price < $product->price
-        ? round((1 - ($product->sale_price / $product->price)) * 100)
+    $basePrice = (float) ($product->price ?? 0);
+    $baseSale = $product->sale_price ? (float) $product->sale_price : null;
+    $hasSale = $baseSale && $baseSale > 0 && $baseSale < $basePrice;
+
+    $displayBasePrice = $hasSale ? $baseSale : $basePrice;
+    $displayPriceValue = \App\Support\Money::convertToDisplay($displayBasePrice);
+    $displayPriceFormatted = \App\Support\Money::format($displayBasePrice);
+    $originalPriceFormatted = $hasSale ? \App\Support\Money::format($basePrice) : null;
+    $discountPercent = $hasSale
+        ? round((1 - ($baseSale / $basePrice)) * 100)
         : null;
 
     $inWishlist = auth()->check() ? auth()->user()->wishlistItems()->where('product_id', $product->id)->exists() : false;
@@ -139,9 +146,9 @@
                             </div>
 
                             <div class="d-flex align-items-baseline gap-3 mt-2">
-                                <span class="ul-product-details-price">${{ number_format($displayPrice, 2) }}</span>
+                                <span class="ul-product-details-price">{{ $displayPriceFormatted }}</span>
                                 @if($discountPercent)
-                                    <span class="text-muted text-decoration-line-through">${{ number_format($product->price, 2) }}</span>
+                                    <span class="text-muted text-decoration-line-through">{{ $originalPriceFormatted }}</span>
                                     <span class="badge bg-danger-subtle text-danger fw-semibold">Save {{ $discountPercent }}%</span>
                                 @endif
                             </div>

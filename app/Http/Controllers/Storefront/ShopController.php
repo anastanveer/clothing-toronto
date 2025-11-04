@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use App\Support\Money;
 
 class ShopController extends Controller
 {
@@ -191,13 +192,18 @@ class ShopController extends Controller
     {
         $product->loadMissing('brand');
 
-        $price = $product->price;
-        $sale = $product->sale_price;
-        $displayPrice = ($sale && $sale < $price) ? $sale : $price;
+        $basePrice = (float) ($product->price ?? 0);
+        $baseSale = $product->sale_price ? (float) $product->sale_price : null;
+        $hasSale = $baseSale && $baseSale > 0 && $baseSale < $basePrice;
+
+        $displayBasePrice = $hasSale ? $baseSale : $basePrice;
+        $displayPriceValue = Money::convertToDisplay($displayBasePrice);
+        $displayPriceFormatted = Money::format($displayBasePrice);
+        $originalPriceFormatted = $hasSale ? Money::format($basePrice) : null;
         $discountLabel = null;
 
-        if ($sale && $sale < $price) {
-            $percent = max(1, round((1 - ($sale / $price)) * 100));
+        if ($hasSale) {
+            $percent = max(1, round((1 - ($baseSale / $basePrice)) * 100));
             $discountLabel = "Save {$percent}%";
         }
 
@@ -230,9 +236,9 @@ class ShopController extends Controller
             'brand' => $brand?->name,
             'brand_slug' => $brand?->slug,
             'brand_url' => $brand && $brand->is_published ? route('shop.brand', ['slug' => $brand->slug]) : null,
-            'price' => '$' . number_format($displayPrice, 2),
-            'price_value' => (float) $displayPrice,
-            'original_price' => $sale && $sale < $price ? '$' . number_format($price, 2) : null,
+            'price' => $displayPriceFormatted,
+            'price_value' => $displayPriceValue,
+            'original_price' => $originalPriceFormatted,
             'discount' => $discountLabel,
             'image' => $primaryImage,
             'gallery' => $gallery->values()->all(),

@@ -169,6 +169,11 @@
                                 <span class="inner-title">Loyalty reward</span>
                                 <span class="number text-success" data-cart-summary="loyalty-discount">{{ $summary['loyalty_discount_formatted'] ?? '' }}</span>
                             </div>
+
+                            <div class="single-row">
+                                <span class="inner-title">Tax ({{ number_format(config('commerce.tax_rate', 0) * 100, 1) }}%)</span>
+                                <span class="number" data-cart-summary="tax">{{ $summary['tax_formatted'] }}</span>
+                            </div>
                         </div>
                         <div class="ul-cart-expense-overview__coupon {{ $appliedCoupon ? '' : 'is-hidden' }}" data-cart-summary-block="coupon-card">
                             <span class="badge bg-primary-subtle text-primary text-uppercase" data-cart-summary="coupon-code">{{ $appliedCoupon->code ?? '' }}</span>

@@ -46,7 +46,7 @@
         ];
     @endphp
         <!-- BANNER SECTION START -->
-        <div class="overflow-hidden">
+        <div class="overflow-hidden home-hero-wrapper">
             <div class="ul-container">
                 <section class="ul-banner">
                     <div class="ul-banner-slider-wrapper">
@@ -106,8 +106,106 @@
         </div>
         <!-- BANNER SECTION END -->
 
+        @php
+            $womenArrivals = ($womenProductSliderItems ?? collect())->take(10);
+            $menArrivals = ($menProductSliderItems ?? collect())->take(10);
+        @endphp
 
-        <!-- CATEGORY SECTION START -->
+        @if($womenArrivals->isNotEmpty() || $menArrivals->isNotEmpty())
+            <div class="ul-container home-arrivals-container">
+                <section class="home-arrivals" data-arrivals>
+                    <div class="home-arrivals__head">
+                        <div>
+                            <span class="home-arrivals__eyebrow">Fresh arrivals</span>
+                            <h2 class="home-arrivals__title">Toronto Textile drop spotlight</h2>
+                            <p class="home-arrivals__subtitle">Explore the latest edits handpicked for the city - swap between women's and men's capsules in one place.</p>
+                        </div>
+                        <div class="home-arrivals__controls">
+                            <div class="home-arrivals__tabs" data-arrivals-tabs>
+                                <button type="button" class="home-arrivals__tab is-active" data-arrivals-toggle="women">
+                                    Women
+                                </button>
+                                <button type="button" class="home-arrivals__tab" data-arrivals-toggle="men">
+                                    Men
+                                </button>
+                            </div>
+                            <div class="home-arrivals__select">
+                                <label for="home-arrivals-select" class="visually-hidden">Choose lineup</label>
+                                <select id="home-arrivals-select" data-arrivals-select>
+                                    <option value="women" selected>Women</option>
+                                    <option value="men">Men</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="home-arrivals__panels">
+                        <div class="home-arrivals__panel is-active" data-arrivals-panel="women">
+                            @if($womenArrivals->isNotEmpty())
+                                <div class="swiper home-arrivals-slider home-arrivals-slider--women">
+                                    <div class="swiper-wrapper">
+                                        @foreach($womenArrivals as $product)
+                                            <div class="swiper-slide">
+                                                <x-product.card :product="$product" />
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="home-arrivals__nav home-arrivals__nav--women">
+                                    <button type="button" class="prev" aria-label="Previous women arrivals">
+                                        <i class="flaticon-left-arrow"></i>
+                                    </button>
+                                    <button type="button" class="next" aria-label="Next women arrivals">
+                                        <i class="flaticon-arrow-point-to-right"></i>
+                                    </button>
+                                </div>
+                            @else
+                                <p class="home-arrivals__empty">Women's arrivals are loading - check back shortly.</p>
+                            @endif
+
+                            <div class="home-arrivals__link">
+                                <a href="{{ route('shop.category', 'women') }}" class="ul-btn ul-btn--ghost">
+                                    View all women <i class="flaticon-up-right-arrow"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="home-arrivals__panel" data-arrivals-panel="men">
+                            @if($menArrivals->isNotEmpty())
+                                <div class="swiper home-arrivals-slider home-arrivals-slider--men">
+                                    <div class="swiper-wrapper">
+                                        @foreach($menArrivals as $product)
+                                            <div class="swiper-slide">
+                                                <x-product.card :product="$product" />
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                                <div class="home-arrivals__nav home-arrivals__nav--men">
+                                    <button type="button" class="prev" aria-label="Previous men arrivals">
+                                        <i class="flaticon-left-arrow"></i>
+                                    </button>
+                                    <button type="button" class="next" aria-label="Next men arrivals">
+                                        <i class="flaticon-arrow-point-to-right"></i>
+                                    </button>
+                                </div>
+                            @else
+                                <p class="home-arrivals__empty">Men's arrivals are on the way - hold tight.</p>
+                            @endif
+
+                            <div class="home-arrivals__link">
+                                <a href="{{ route('shop.category', 'men') }}" class="ul-btn ul-btn--ghost">
+                                    View all men <i class="flaticon-up-right-arrow"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        @endif
+
+
+        {{-- <!-- CATEGORY SECTION START -->
         <div class="ul-container">
             <section class="ul-categories">
                 <div class="ul-inner-container">
@@ -235,10 +333,10 @@
                 </div>
             </section>
         </div>
-        <!-- CATEGORY SECTION END -->
+        <!-- CATEGORY SECTION END --> --}}
 
 
-        <!-- PRODUCTS SECTION START -->
+        {{-- <!-- PRODUCTS SECTION START -->
         <div class="ul-container">
             <section class="ul-products">
                 <div class="ul-inner-container">
@@ -320,7 +418,7 @@
                 </div>
             </section>
         </div>
-        <!-- PRODUCTS SECTION END -->
+        <!-- PRODUCTS SECTION END --> --}}
 
 
         <!-- AD SECTION START -->

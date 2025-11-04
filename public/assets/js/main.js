@@ -795,6 +795,7 @@
             setText('shipping', summary.shipping_formatted);
             setText('coupon-discount', summary.coupon_discount_formatted);
             setText('loyalty-discount', summary.loyalty_discount_formatted);
+            setText('tax', summary.tax_formatted);
             setText('total', summary.total_formatted);
             setText('coupon-code', payload.coupon_code);
             setText('coupon-title', payload.coupon_title);
@@ -1074,7 +1075,7 @@
     const bannerThumbSlider = new Swiper(".ul-banner-img-slider", {
         slidesPerView: 1.4,
         loop: true,
-        autoplay: true,
+                autoplay: false,
         spaceBetween: 15,
         // slideToClickedSlide: true,
         // centeredSlides: true,
@@ -1118,6 +1119,96 @@
         mixitup('.ul-filter-products-wrapper');
     }
 
+
+    // arrivals sliders
+    const arrivalsSwipers = {};
+    [
+        {
+            key: 'women',
+            selector: '.home-arrivals-slider--women',
+            next: '.home-arrivals__nav--women .next',
+            prev: '.home-arrivals__nav--women .prev',
+        },
+        {
+            key: 'men',
+            selector: '.home-arrivals-slider--men',
+            next: '.home-arrivals__nav--men .next',
+            prev: '.home-arrivals__nav--men .prev',
+        },
+    ].forEach(function (config) {
+        if (document.querySelector(config.selector)) {
+            arrivalsSwipers[config.key] = new Swiper(config.selector, {
+                slidesPerView: 4,
+                loop: false,
+                spaceBetween: 20,
+                navigation: {
+                    nextEl: config.next,
+                    prevEl: config.prev,
+                },
+                breakpoints: {
+                    0: {
+                        slidesPerView: 1,
+                    },
+                    520: {
+                        slidesPerView: 2,
+                    },
+                    992: {
+                        slidesPerView: 3,
+                    },
+                    1280: {
+                        slidesPerView: 4,
+                        spaceBetween: 22,
+                    },
+                    1600: {
+                        slidesPerView: 4,
+                        spaceBetween: 26,
+                    },
+                },
+            });
+        }
+    });
+
+    document.querySelectorAll("[data-arrivals]").forEach(function (section) {
+        const toggles = section.querySelectorAll("[data-arrivals-toggle]");
+        const panels = section.querySelectorAll("[data-arrivals-panel]");
+        const select = section.querySelector("[data-arrivals-select]");
+
+        const activate = function (target) {
+            if (!target) {
+                return;
+            }
+
+            toggles.forEach(function (button) {
+                button.classList.toggle("is-active", button.dataset.arrivalsToggle === target);
+            });
+
+            panels.forEach(function (panel) {
+                const isActive = panel.dataset.arrivalsPanel === target;
+                panel.classList.toggle("is-active", isActive);
+                if (isActive && arrivalsSwipers[target]) {
+                    setTimeout(function () {
+                        arrivalsSwipers[target].update();
+                    }, 50);
+                }
+            });
+
+            if (select && select.value !== target) {
+                select.value = target;
+            }
+        };
+
+        toggles.forEach(function (button) {
+            button.addEventListener("click", function () {
+                activate(button.dataset.arrivalsToggle);
+            });
+        });
+
+        if (select) {
+            select.addEventListener("change", function () {
+                activate(select.value);
+            });
+        }
+    });
 
     // product slider
     new Swiper(".ul-products-slider-1", {

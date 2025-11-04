@@ -263,6 +263,10 @@
                                 <span>{{ $summary['loyalty_discount_formatted'] }}</span>
                             </div>
                         @endif
+                        <div class="ul-checkout-summary__row">
+                            <span>Tax ({{ number_format(config('commerce.tax_rate', 0) * 100, 1) }}%)</span>
+                            <span>{{ $summary['tax_formatted'] }}</span>
+                        </div>
                         <div class="ul-checkout-summary__total">
                             <span>Total due</span>
                             <span>{{ $summary['total_formatted'] }}</span>

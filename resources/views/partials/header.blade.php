@@ -61,7 +61,6 @@
                             <a href="{{ route('shop') }}">Shop</a>
                             <a href="{{ route('shop.category', 'women') }}">Women</a>
                             <a href="{{ route('shop.category', 'men') }}">Men's</a>
-                            <a href="{{ route('shop.category', 'kids') }}">Kids</a>
                             <a href="{{ route('blog') }}">Blog</a>
 
                         </nav>

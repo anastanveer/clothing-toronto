@@ -45,6 +45,13 @@
     $encodedShareUrl = rawurlencode($shareUrl);
     $encodedShareMessage = rawurlencode(trim($shareMessage . ' ' . $shareUrl));
 
+    if (is_numeric($price)) {
+        $price = \App\Support\Money::format((float) $price);
+    }
+    if (is_numeric($originalPrice)) {
+        $originalPrice = \App\Support\Money::format((float) $originalPrice);
+    }
+
     if (! $imageUrl) {
         $imageUrl = asset('assets/img/product-img-1.jpg');
         $gallery = collect([$imageUrl]);

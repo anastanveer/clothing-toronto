@@ -9,6 +9,7 @@ use App\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use App\Support\Money;
 
 class NotificationCenterController extends Controller
 {
@@ -113,7 +114,7 @@ class NotificationCenterController extends Controller
                     'name' => $product->name,
                     'slug' => $product->slug,
                     'price' => $currentPrice,
-                    'formattedPrice' => '$' . number_format($currentPrice, 2),
+                    'formattedPrice' => Money::format($currentPrice),
                     'brand' => optional($product->brand)->name,
                     'image' => $product->featured_image ? asset($product->featured_image) : asset('assets/img/product-img-sm-6.jpg'),
                     'url' => route('shop.details', ['slug' => $product->slug ?? $product->id]),

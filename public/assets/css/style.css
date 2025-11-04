@@ -1475,7 +1475,7 @@ button {
 
 .ul-header-alerts-product img {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 4 / 6;
   object-fit: cover;
 }
 
@@ -1702,6 +1702,202 @@ button {
 .ss-content .ss-list .ss-option:hover {
   background-color: transparent;
   color: var(--ul-primary);
+}
+
+.home-hero-wrapper {
+  margin-bottom: clamp(40px, 6vw, 96px);
+}
+
+.home-arrivals-container {
+  margin-bottom: clamp(48px, 6.5vw, 110px);
+}
+
+.home-arrivals {
+  background: linear-gradient(135deg, rgba(239, 40, 83, 0.12), rgba(239, 40, 83, 0.04));
+  border-radius: clamp(18px, 1.9vw, 32px);
+  padding: clamp(24px, 3vw, 52px);
+  position: relative;
+  overflow: hidden;
+}
+
+.home-arrivals::after {
+  content: "";
+  position: absolute;
+  inset: auto -40px -60px auto;
+  width: clamp(160px, 22vw, 260px);
+  height: clamp(160px, 22vw, 260px);
+  background: radial-gradient(circle at center, rgba(239, 40, 83, 0.18), transparent 65%);
+  pointer-events: none;
+}
+
+.home-arrivals__head {
+  display: flex;
+  justify-content: space-between;
+  gap: clamp(18px, 3vw, 46px);
+  flex-wrap: wrap;
+}
+
+.home-arrivals__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(239, 40, 83, 0.12);
+  color: rgba(239, 40, 83, 0.9);
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: clamp(6px, 0.9vw, 12px);
+}
+
+.home-arrivals__title {
+  font-size: clamp(26px, 3vw, 42px);
+  margin-bottom: clamp(6px, 1vw, 14px);
+  color: var(--black);
+}
+
+.home-arrivals__subtitle {
+  max-width: clamp(260px, 42vw, 520px);
+  color: rgba(15, 23, 42, 0.75);
+  margin: 0;
+}
+
+.home-arrivals__controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.home-arrivals__tabs {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  padding: 4px;
+  gap: 6px;
+}
+
+.home-arrivals__tab {
+  border: 0;
+  background: transparent;
+  padding: 8px 18px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: rgba(15, 23, 42, 0.6);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.home-arrivals__tab.is-active {
+  background: linear-gradient(135deg, #ef2853, #ff7aa4);
+  color: #fff;
+  box-shadow: 0 12px 22px -12px rgba(239, 40, 83, 0.45);
+}
+
+.home-arrivals__select select {
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  color: rgba(15, 23, 42, 0.75);
+}
+
+.home-arrivals__select {
+  display: none;
+}
+
+.home-arrivals__panels {
+  margin-top: clamp(26px, 3vw, 42px);
+}
+
+.home-arrivals__panel {
+  display: none;
+}
+
+.home-arrivals__panel.is-active {
+  display: block;
+}
+
+.home-arrivals__nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.home-arrivals__nav button {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--black);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.home-arrivals__nav button:hover {
+  color: #ef2853;
+  border-color: rgba(239, 40, 83, 0.4);
+}
+
+.home-arrivals__link {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.home-arrivals__link .ul-btn--ghost {
+  border-color: rgba(15, 23, 42, 0.12);
+  color: var(--black);
+}
+
+.home-arrivals__link .ul-btn--ghost:hover {
+  border-color: rgba(239, 40, 83, 0.65);
+  color: #ef2853;
+}
+
+.home-arrivals__empty {
+  margin: 12px 0 0;
+  color: rgba(15, 23, 42, 0.65);
+  font-size: 0.95rem;
+}
+
+@media screen and (max-width: 991px) {
+  .home-arrivals__controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .home-arrivals__link {
+    justify-content: center;
+  }
+  .home-arrivals__nav {
+    justify-content: center;
+  }
+}
+
+@media screen and (max-width: 575px) {
+  .home-arrivals__tabs {
+    display: none;
+  }
+  .home-arrivals__select {
+    display: block;
+    width: 100%;
+  }
+  .home-arrivals__controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .home-arrivals__head {
+    flex-direction: column;
+  }
+  .home-arrivals::after {
+    inset: auto -60px -80px auto;
+  }
 }
 
 .ul-banner {

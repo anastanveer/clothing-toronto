@@ -18,16 +18,17 @@ class CartSummary
     {
         $lines = $cartItems->map(function (CartItem $item) {
             $product = $item->product;
-            $unitPrice = (float) ($product?->sale_price ?? $product?->price ?? 0);
+            $baseUnitPrice = (float) ($product?->sale_price ?? $product?->price ?? 0);
+            $unitPrice = Money::convertToDisplay($baseUnitPrice);
             $lineTotal = $unitPrice * $item->quantity;
 
             return [
                 'model' => $item,
                 'product' => $product,
                 'unit_price' => $unitPrice,
-                'unit_price_formatted' => self::formatCurrency($unitPrice),
+                'unit_price_formatted' => Money::format($baseUnitPrice),
                 'line_total' => $lineTotal,
-                'line_total_formatted' => self::formatCurrency($lineTotal),
+                'line_total_formatted' => Money::format($lineTotal, false),
                 'in_stock' => ($product?->stock ?? 0) > 0,
             ];
         });
@@ -83,32 +84,33 @@ class CartSummary
         }
 
         $discount = $loyaltyDiscount + $couponDiscount;
-        $total = max(0, $subtotal + $shipping - $discount);
+        $taxable = max(0, $subtotal - $discount);
+        $taxRate = (float) config('commerce.tax_rate', 0);
+        $tax = round($taxable * $taxRate, 2);
+        $total = max(0, $taxable + $tax + $shipping);
 
         return [
             'lines' => $lines,
             'summary' => [
                 'subtotal' => $subtotal,
-                'subtotal_formatted' => self::formatCurrency($subtotal),
+                'subtotal_formatted' => Money::format($subtotal, false),
                 'shipping' => $shipping,
-                'shipping_formatted' => $shipping > 0 ? self::formatCurrency($shipping) : 'Free',
+                'shipping_formatted' => $shipping > 0 ? Money::format($shipping, false) : 'Free',
                 'loyalty_discount' => $loyaltyDiscount,
-                'loyalty_discount_formatted' => $loyaltyDiscount > 0 ? '-' . self::formatCurrency($loyaltyDiscount) : null,
+                'loyalty_discount_formatted' => $loyaltyDiscount > 0 ? '-' . Money::format($loyaltyDiscount, false) : null,
                 'coupon_discount' => $couponDiscount,
-                'coupon_discount_formatted' => $couponDiscount > 0 ? '-' . self::formatCurrency($couponDiscount) : null,
+                'coupon_discount_formatted' => $couponDiscount > 0 ? '-' . Money::format($couponDiscount, false) : null,
                 'discount' => $discount,
-                'discount_formatted' => $discount > 0 ? '-' . self::formatCurrency($discount) : '$0.00',
+                'discount_formatted' => $discount > 0 ? '-' . Money::format($discount, false) : Money::format(0, false),
+                'tax' => $tax,
+                'tax_formatted' => $tax > 0 ? Money::format($tax, false) : Money::format(0, false),
                 'total' => $total,
-                'total_formatted' => self::formatCurrency($total),
+                'total_formatted' => Money::format($total, false),
             ],
             'loyalty_banner' => $loyaltyBanner,
             'applied_coupon' => $appliedCoupon,
             'coupon_message' => $couponMessage,
         ];
     }
-
-    protected static function formatCurrency(float $amount): string
-    {
-        return '$' . number_format($amount, 2);
-    }
 }
+use App\Support\Money;

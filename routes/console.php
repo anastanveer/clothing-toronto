@@ -76,8 +76,8 @@ Artisan::command('import:khanabadosh {--wipe}', function () {
         $compareAt = (float) ($variant['compare_at_price'] ?? 0);
         $currentPrice = (float) ($variant['price'] ?? 0);
 
-        $price = $compareAt > 0 ? $compareAt : $currentPrice;
-        $salePrice = $compareAt > 0 ? ($currentPrice ?: null) : null;
+        $price = $compareAt > $currentPrice ? $compareAt : $currentPrice;
+        $salePrice = $compareAt > $currentPrice ? $currentPrice : null;
 
         $slugSource = $raw['handle'] ?? $raw['title'] ?? Str::uuid()->toString();
         $slug = Str::slug($slugSource);

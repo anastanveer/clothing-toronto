@@ -14,6 +14,10 @@
     $rating = $data->get('rating', 5);
     $imageUrl = $imagePath;
 
+    if (is_numeric($price)) {
+        $price = \App\Support\Money::format((float) $price);
+    }
+
     if ($imagePath && ! preg_match('#^(https?:)?//#', $imagePath)) {
         $imageUrl = asset($imagePath);
     }

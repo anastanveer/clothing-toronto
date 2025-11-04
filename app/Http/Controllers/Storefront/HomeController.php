@@ -9,6 +9,7 @@ use App\Models\Brand;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
+use App\Support\Money;
 
 class HomeController extends Controller
 {
@@ -38,7 +39,7 @@ class HomeController extends Controller
         $menSliderProducts = $this->categorySliderProducts('men', $sliderProducts);
         $womenSliderProducts = $this->categorySliderProducts('women', $sliderProducts);
 
-        $compactProducts = Product::where('status', 'published')->latest()->take(12)->get();
+        $compactProducts = $this->balancedHorizontalProducts();
 
         $recentPosts = Schema::hasTable('blog_posts')
             ? BlogPost::where('status', 'published')->latest('published_at')->take(4)->get()
@@ -94,13 +95,18 @@ class HomeController extends Controller
     {
         $this->primeUserProductState();
 
-        $price = $product->price;
-        $sale = $product->sale_price;
-        $displayPrice = $sale ?? $price;
+        $basePrice = (float) ($product->price ?? 0);
+        $baseSale = $product->sale_price ? (float) $product->sale_price : null;
+        $hasSale = $baseSale && $baseSale > 0 && $baseSale < $basePrice;
+
+        $displayBasePrice = $hasSale ? $baseSale : $basePrice;
+        $displayPriceFormatted = Money::format($displayBasePrice);
+        $displayPriceValue = Money::convertToDisplay($displayBasePrice);
+        $originalPriceFormatted = $hasSale ? Money::format($basePrice) : null;
         $discountLabel = null;
 
-        if ($sale && $sale < $price) {
-            $percent = round((1 - ($sale / $price)) * 100);
+        if ($hasSale) {
+            $percent = round((1 - ($baseSale / $basePrice)) * 100);
             $discountLabel = "Save {$percent}%";
         }
 
@@ -115,8 +121,9 @@ class HomeController extends Controller
             'category' => $categoryLabel,
             'category_route' => 'shop.category',
             'category_url' => route('shop.category', ['category' => $category]),
-            'price' => '$' . number_format($displayPrice, 2),
-            'price_value' => (float) $displayPrice,
+            'price' => $displayPriceFormatted,
+            'price_value' => $displayPriceValue,
+            'original_price' => $originalPriceFormatted,
             'discount' => $discountLabel,
             'image' => $product->featured_image ? asset($product->featured_image) : asset('assets/img/product-img-1.jpg'),
             'details_url' => route('shop.details', ['slug' => $product->slug ?? $product->id]),
@@ -161,6 +168,39 @@ class HomeController extends Controller
             ->values();
 
         return $categoryProducts->isNotEmpty() ? $categoryProducts : $fallback;
+    }
+
+    protected function balancedHorizontalProducts(int $limit = 12): Collection
+    {
+        $categories = ['women', 'men'];
+        $perCategory = (int) ceil($limit / max(count($categories), 1));
+
+        $products = collect();
+
+        foreach ($categories as $category) {
+            $subset = Product::where('status', 'published')
+                ->whereRaw('LOWER(category) = ?', [strtolower($category)])
+                ->latest()
+                ->take($perCategory)
+                ->get();
+
+            $products = $products->merge($subset);
+        }
+
+        if ($products->count() < $limit) {
+            $additional = Product::where('status', 'published')
+                ->whereNotIn('id', $products->pluck('id'))
+                ->latest()
+                ->take($limit - $products->count())
+                ->get();
+
+            $products = $products->merge($additional);
+        }
+
+        return $products
+            ->unique('id')
+            ->values()
+            ->take($limit);
     }
 
     protected function resolvePrimaryBrand(): ?Brand
