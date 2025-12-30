@@ -19,6 +19,8 @@ use App\Http\Controllers\Storefront\CartController;
 use App\Http\Controllers\Storefront\HeaderMetricsController;
 use App\Http\Controllers\Storefront\CheckoutController;
 use App\Http\Controllers\Storefront\NotificationCenterController;
+use App\Http\Controllers\Storefront\SocialLoginController;
+use App\Http\Controllers\Storefront\ForgotPasswordController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 
 Route::get('/', HomeController::class)->name('home');
@@ -40,22 +42,35 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/signup', [StorefrontAuthController::class, 'showRegistrationForm'])->name('signup');
     Route::post('/signup', [StorefrontAuthController::class, 'register'])->name('signup.submit');
+
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+
+    Route::get('/auth/{provider}/redirect', [SocialLoginController::class, 'redirect'])
+        ->whereIn('provider', ['google', 'facebook'])
+        ->name('social.redirect');
+    Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback'])
+        ->whereIn('provider', ['google', 'facebook'])
+        ->name('social.callback');
 });
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [StorefrontAuthController::class, 'logout'])->name('logout');
     Route::get('/account/dashboard', [UserDashboardController::class, 'index'])->name('account.dashboard');
-    Route::get('/cart', [CartController::class, 'index'])->name('cart');
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
-    Route::patch('/cart/items/{cartItem}', [CartController::class, 'update'])->name('cart.items.update');
-    Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.items.destroy');
-    Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
-    Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
     Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
     Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::delete('/wishlist/{wishlistItem}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
-    Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
 });
+
+Route::get('/cart', [CartController::class, 'index'])->name('cart');
+Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
+Route::patch('/cart/items/{cartItem}', [CartController::class, 'update'])->name('cart.items.update');
+Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
+Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 
 Route::view('/our-store', 'pages.our-store')->name('our-store');
 Route::view('/contact', 'pages.contact')->name('contact');

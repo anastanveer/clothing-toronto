@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Storefront;
 
+use App\Http\Controllers\Concerns\InteractsWithCart;
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
 use App\Support\Loyalty;
@@ -10,22 +11,13 @@ use Illuminate\Http\Request;
 
 class HeaderMetricsController extends Controller
 {
+    use InteractsWithCart;
+
     public function __invoke(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        if (! $user) {
-            return response()->json([
-                'wishlistCount' => 0,
-                'cartCount' => 0,
-                'loyaltyPoints' => 0,
-                'pendingPoints' => 0,
-            ]);
-        }
-
-        $wishlistCount = (int) $user->wishlistItems()->count();
-        $cartItems = $user->cartItems()->with('product')->get();
-
+        $cartItems = $this->scopedCartItems($request, ['product'])->get();
         $cartCount = (int) $cartItems->sum('quantity');
         $cartValue = $cartItems->sum(function (CartItem $item) {
             $product = $item->product;
@@ -33,6 +25,17 @@ class HeaderMetricsController extends Controller
 
             return $unitPrice * $item->quantity;
         });
+
+        if (! $user) {
+            return response()->json([
+                'wishlistCount' => 0,
+                'cartCount' => $cartCount,
+                'loyaltyPoints' => 0,
+                'pendingPoints' => 0,
+            ]);
+        }
+
+        $wishlistCount = (int) $user->wishlistItems()->count();
 
         $loyaltySummary = Loyalty::summarize(
             (float) $user->orders()->sum('total'),

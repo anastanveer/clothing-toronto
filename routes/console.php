@@ -38,7 +38,9 @@ Artisan::command('import:khanabadosh {--wipe}', function () {
     );
 
     if ($this->option('wipe')) {
-        $deleted = Product::where('brand_id', $brand->id)->delete();
+        $deleted = Product::withTrashed()
+            ->where('brand_id', $brand->id)
+            ->forceDelete();
         $this->info("Deleted {$deleted} existing products for Khanabadosh.");
     }
 
@@ -57,7 +59,32 @@ Artisan::command('import:khanabadosh {--wipe}', function () {
     $this->info('Importing ' . $rawProducts->count() . ' products...');
     $bar = $this->output->createProgressBar($rawProducts->count());
 
-    $rawProducts->each(function (array $raw) use ($brand, $bar) {
+    $ensureUniqueSlug = function (string $slug) use ($brand) {
+        $slugCollision = function (string $candidate) use ($brand) {
+            return Product::where('slug', $candidate)
+                ->where(function ($query) use ($brand) {
+                    $query->where('brand_id', '!=', $brand->id)
+                        ->orWhereNull('brand_id');
+                })
+                ->exists();
+        };
+
+        if (! $slugCollision($slug)) {
+            return $slug;
+        }
+
+        $base = Str::slug($brand->slug . '-' . $slug) ?: $slug;
+        $candidate = $base;
+        $suffix = 2;
+        while ($slugCollision($candidate)) {
+            $candidate = "{$base}-{$suffix}";
+            $suffix++;
+        }
+
+        return $candidate;
+    };
+
+    $rawProducts->each(function (array $raw) use ($brand, $bar, $ensureUniqueSlug) {
         $bar->advance();
 
         $variant = Arr::first($raw['variants'] ?? []) ?? [];
@@ -85,7 +112,22 @@ Artisan::command('import:khanabadosh {--wipe}', function () {
             $slug = Str::slug($raw['title'] ?? ('product-' . Str::random(6)));
         }
 
+        $slug = $ensureUniqueSlug($slug);
+
         $summary = Str::limit(trim(strip_tags(Arr::get($raw, 'body_html', ''))), 240);
+        $sku = $variant['sku'] ?: null;
+        if ($sku !== null) {
+            $skuCollision = Product::where('sku', $sku)
+                ->where(function ($query) use ($brand) {
+                    $query->where('brand_id', '!=', $brand->id)
+                        ->orWhereNull('brand_id');
+                })
+                ->exists();
+
+            if ($skuCollision) {
+                $sku = $sku . '-' . Str::upper(Str::slug($brand->slug));
+            }
+        }
 
         Product::updateOrCreate(
             [
@@ -94,7 +136,7 @@ Artisan::command('import:khanabadosh {--wipe}', function () {
             ],
             [
                 'name' => $raw['title'] ?? 'Untitled Product',
-                'sku' => $variant['sku'] ?: null,
+                'sku' => $sku,
                 'category' => $category,
                 'summary' => $summary ?: null,
                 'description' => $raw['body_html'] ?? null,
@@ -123,3 +165,8 @@ Artisan::command('import:khanabadosh {--wipe}', function () {
 
     return 0;
 })->purpose('Import Khanabadosh catalog from local Shopify JSON exports');
+
+Artisan::command('k-save', function () {
+    $this->call('storefront:sync-remote');
+    $this->info('Remote Khanabadosh catalog synced.');
+})->purpose('Shortcut to sync Khanabadosh products from the live store');

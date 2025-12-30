@@ -29,6 +29,10 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'role',
+        'provider_name',
+        'google_id',
+        'facebook_id',
+        'avatar_url',
     ];
 
     /**

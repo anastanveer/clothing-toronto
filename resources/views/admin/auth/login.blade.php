@@ -28,13 +28,13 @@
                             <div class="row">
                                 <div class="form-group">
                                     <div class="position-relative">
-                                        <input type="email" name="email" id="email" value="{{ old('email', 'admin@glamer.local') }}" placeholder="Enter Admin Email" required>
+                                        <input type="email" name="email" id="email" value="{{ old('email') }}" placeholder="Enter Admin Email" required>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <div class="position-relative">
-                                        <input type="password" name="password" id="password" value="{{ old('password', 'Anas12345!@#$%') }}" placeholder="Enter Password" required>
+                                        <input type="password" name="password" id="password" placeholder="Enter Password" required>
                                     </div>
                                 </div>
 
@@ -48,11 +48,6 @@
 
                             <button type="submit">Sign In</button>
                         </form>
-
-                        <div class="text-center mt-4">
-                            <strong>Demo credentials</strong>
-                            <p class="mb-0 text-secondary small">Email: admin@glamer.local<br>Password: Anas12345!@#$%</p>
-                        </div>
                     </div>
                 </div>
             </div>

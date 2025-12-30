@@ -5,6 +5,14 @@
 @section('content')
 @php
     use Illuminate\Support\Str;
+    $checkoutCustomer = $customer ?? null;
+    $customerName = $checkoutCustomer?->name ?? '';
+    $customerFirstName = trim(Str::of($customerName)->before(' '));
+    if ($customerFirstName === '' && $customerName !== '') {
+        $customerFirstName = $customerName;
+    }
+    $customerLastName = trim(Str::of($customerName)->after(' '));
+    $customerEmail = $checkoutCustomer?->email ?? '';
 @endphp
 <x-layout.page>
     <x-page.header
@@ -45,15 +53,15 @@
                         <div class="ul-checkout-form-grid">
                             <label class="ul-checkout-field">
                                 <span>First name</span>
-                                <input type="text" placeholder="First name" value="{{ old('first_name', Str::of($customer->name)->before(' ')) }}">
+                                <input type="text" placeholder="First name" value="{{ old('first_name', $customerFirstName) }}">
                             </label>
                             <label class="ul-checkout-field">
                                 <span>Last name</span>
-                                <input type="text" placeholder="Last name" value="{{ old('last_name', Str::of($customer->name)->after(' ')) }}">
+                                <input type="text" placeholder="Last name" value="{{ old('last_name', $customerLastName) }}">
                             </label>
                             <label class="ul-checkout-field">
                                 <span>Email address</span>
-                                <input type="email" placeholder="you@example.com" value="{{ old('email', $customer->email) }}">
+                                <input type="email" placeholder="you@example.com" value="{{ old('email', $customerEmail) }}">
                             </label>
                             <label class="ul-checkout-field">
                                 <span>Phone</span>
@@ -324,5 +332,8 @@
                 </div>
             </aside>
         </div>
+        @guest
+            <x-login-reward-modal />
+        @endguest
 </x-layout.page>
 @endsection

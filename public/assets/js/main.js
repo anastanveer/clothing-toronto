@@ -1518,6 +1518,52 @@
         });
     });
 
+    function initRewardModal() {
+        const rewardModal = document.querySelector('[data-login-reward-modal]');
+        if (!rewardModal) {
+            return;
+        }
+
+        const dismissedKey = 'glamer.reward.modal.dismissed';
+        const hideModal = function (persist) {
+            rewardModal.classList.remove('is-visible');
+            if (persist) {
+                sessionStorage.setItem(dismissedKey, '1');
+            }
+            window.setTimeout(function () {
+                rewardModal.hidden = true;
+            }, 240);
+        };
+
+        const showModal = function () {
+            if (sessionStorage.getItem(dismissedKey)) {
+                return;
+            }
+            rewardModal.hidden = false;
+            requestAnimationFrame(function () {
+                rewardModal.classList.add('is-visible');
+            });
+        };
+
+        rewardModal.querySelectorAll('[data-login-reward-action]').forEach(function (trigger) {
+            trigger.addEventListener('click', function (event) {
+                var action = trigger.getAttribute('data-login-reward-action');
+                if (action === 'dismiss') {
+                    event.preventDefault();
+                    hideModal(true);
+                }
+
+                if (action === 'login') {
+                    sessionStorage.setItem(dismissedKey, '1');
+                }
+            });
+        });
+
+        if (!sessionStorage.getItem(dismissedKey)) {
+            window.setTimeout(showModal, 800);
+        }
+    }
+
     // brand accordion toggles
     document.querySelectorAll('[data-filter-accordion]').forEach(function (accordion) {
         accordion.querySelectorAll('[data-filter-accordion-toggle]').forEach(function (toggle) {
@@ -1651,6 +1697,8 @@
 
             parallaxImage.style.transform = `translateY(${offset}px)`;
         }
+
+        initRewardModal();
     }
 
     function attemptInit() {

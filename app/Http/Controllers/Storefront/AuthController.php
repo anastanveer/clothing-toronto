@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Storefront;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\CartOwnership;
 use App\Support\CouponAllocator;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -32,6 +33,7 @@ class AuthController extends Controller
         ]);
 
         $remember = $request->boolean('remember');
+        $sessionId = $request->session()->getId();
 
         if (! Auth::attempt($credentials, $remember)) {
             return back()->withErrors([
@@ -42,6 +44,8 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         $authUser = Auth::user();
+
+        CartOwnership::migrateSessionCart($sessionId, $authUser);
 
         $authUser?->forceFill([
             'last_login_at' => now(),
@@ -62,6 +66,8 @@ class AuthController extends Controller
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
+        $sessionId = $request->session()->getId();
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
@@ -77,6 +83,8 @@ class AuthController extends Controller
         $user->forceFill([
             'last_login_at' => now(),
         ])->save();
+
+        CartOwnership::migrateSessionCart($sessionId, $user);
 
         app(CouponAllocator::class)->assignWelcomeBundle($user);
 

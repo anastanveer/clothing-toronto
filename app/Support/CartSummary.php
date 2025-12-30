@@ -14,7 +14,7 @@ class CartSummary
      *
      * @param  Collection<int, CartItem>  $cartItems
      */
-    public static function build(User $user, Collection $cartItems, ?Coupon $coupon = null): array
+    public static function build(?User $user, Collection $cartItems, ?Coupon $coupon = null): array
     {
         $lines = $cartItems->map(function (CartItem $item) {
             $product = $item->product;
@@ -36,14 +36,16 @@ class CartSummary
         $subtotal = (float) $lines->sum('line_total');
         $shipping = $subtotal >= 250 ? 0 : ($subtotal > 0 ? 15 : 0);
 
-        $lifetimeSpend = (float) $user->orders()->sum('total');
-        $loyaltyDiscount = $lifetimeSpend >= 500 ? min(50, $subtotal) : 0;
+        $lifetimeSpend = $user ? (float) $user->orders()->sum('total') : 0.0;
+        $loyaltyDiscount = $user ? ($lifetimeSpend >= 500 ? min(50, $subtotal) : 0) : 0;
 
         $loyaltyBanner = null;
         if ($loyaltyDiscount > 0) {
             $loyaltyBanner = 'Radiant Insider perk applied — $50 off this order.';
-        } elseif ($subtotal > 0 && $lifetimeSpend < 500) {
+        } elseif ($subtotal > 0 && $user) {
             $loyaltyBanner = 'Spend $' . number_format(max(0, 500 - $lifetimeSpend), 0) . ' more lifetime to unlock $50 off every order.';
+        } elseif ($subtotal > 0 && ! $user) {
+            $loyaltyBanner = 'Log in to unlock 50 Glamer reward points on this purchase.';
         }
 
         $couponDiscount = 0.0;
@@ -52,18 +54,23 @@ class CartSummary
 
         if ($coupon) {
             if ($coupon->requires_assignment) {
-                $assignment = $user->userCoupons()
-                    ->where('coupon_id', $coupon->id)
-                    ->first();
+                if (! $user) {
+                    $couponMessage = 'Sign in to redeem invitation-only rewards.';
+                    $coupon = null;
+                } else {
+                    $assignment = $user->userCoupons()
+                        ->where('coupon_id', $coupon->id)
+                        ->first();
 
-                if (! $assignment) {
-                    $couponMessage = 'This perk is invitation-only.';
-                    $coupon = null;
-                } elseif (! $assignment->isAvailable()) {
-                    $couponMessage = $assignment->available_at
-                        ? 'This perk unlocks on ' . $assignment->available_at->format('M j, Y') . '.'
-                        : 'This perk hasn’t unlocked yet.';
-                    $coupon = null;
+                    if (! $assignment) {
+                        $couponMessage = 'This perk is invitation-only.';
+                        $coupon = null;
+                    } elseif (! $assignment->isAvailable()) {
+                        $couponMessage = $assignment->available_at
+                            ? 'This perk unlocks on ' . $assignment->available_at->format('M j, Y') . '.'
+                            : 'This perk hasn’t unlocked yet.';
+                        $coupon = null;
+                    }
                 }
             }
 
@@ -113,4 +120,3 @@ class CartSummary
         ];
     }
 }
-use App\Support\Money;

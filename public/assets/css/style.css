@@ -6182,3 +6182,125 @@ button {
     transform: translateY(0);
   }
 }
+
+.ul-social-login {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 1.5rem;
+}
+.ul-social-login__eyebrow {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+.ul-social-login__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+}
+.ul-social-login__btn {
+  align-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 999px;
+  color: #111;
+  display: inline-flex;
+  font-weight: 600;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  text-decoration: none;
+}
+.ul-social-login__btn:hover {
+  border-color: var(--ul-primary);
+  color: var(--ul-primary);
+}
+.ul-social-login__btn--google .ul-social-login__icon {
+  color: #EA4335;
+}
+.ul-social-login__btn--facebook {
+  color: #0a5ce0;
+  border-color: rgba(10, 92, 224, 0.2);
+}
+.ul-social-login__icon {
+  display: inline-flex;
+}
+
+.glamer-reward-modal[hidden] {
+  display: none;
+}
+.glamer-reward-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  display: none;
+}
+.glamer-reward-modal.is-visible {
+  display: block;
+}
+.glamer-reward-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+.glamer-reward-modal__panel {
+  position: relative;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 1.5rem;
+  margin: 10vh auto;
+  padding: 2rem;
+  box-shadow: 0 25px 65px rgba(0, 0, 0, 0.15);
+  animation: reward-pop 0.35s ease;
+}
+.glamer-reward-modal__content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+.glamer-reward-modal__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  background: rgba(239, 40, 83, 0.1);
+  color: var(--ul-primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.glamer-reward-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.glamer-reward-modal__skip {
+  border: none;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.7);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.glamer-reward-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+@keyframes reward-pop {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

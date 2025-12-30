@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Storefront;
 
+use App\Http\Controllers\Concerns\InteractsWithCart;
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
 use App\Models\Coupon;
@@ -15,11 +16,11 @@ use Illuminate\View\View;
 
 class CartController extends Controller
 {
+    use InteractsWithCart;
+
     public function index(Request $request): View
     {
-        $items = $request->user()
-            ->cartItems()
-            ->with('product.brand')
+        $items = $this->scopedCartItems($request, ['product.brand'])
             ->latest('added_at')
             ->get();
 
@@ -60,15 +61,17 @@ class CartController extends Controller
             ->findOrFail($data['product_id']);
 
         $quantity = $data['quantity'] ?? 1;
-        $user = $request->user();
+        $ownerColumn = $this->cartOwnerColumn($request);
+        $ownerValue = $this->cartOwnerValue($request);
 
-        $cartItem = CartItem::query()
-            ->firstOrNew([
-                'user_id' => $user->id,
-                'product_id' => $product->id,
-                'selected_size' => null,
-                'selected_color' => null,
-            ]);
+        $cartItem = CartItem::query()->firstOrNew([
+            $ownerColumn => $ownerValue,
+            'product_id' => $product->id,
+            'selected_size' => null,
+            'selected_color' => null,
+        ]);
+
+        $this->assignCartItemOwner($request, $cartItem);
 
         $cartItem->quantity = min(10, ($cartItem->exists ? $cartItem->quantity : 0) + $quantity);
         $cartItem->added_at = now();
@@ -96,7 +99,7 @@ class CartController extends Controller
 
     public function update(Request $request, CartItem $cartItem): RedirectResponse|JsonResponse
     {
-        $this->ensureOwnsCartItem($request, $cartItem);
+        $this->ensureCartItemOwner($request, $cartItem);
 
         $data = $request->validate([
             'quantity' => ['required', 'integer', 'min:1', 'max:10'],
@@ -121,15 +124,13 @@ class CartController extends Controller
 
     public function destroy(Request $request, CartItem $cartItem): RedirectResponse|JsonResponse
     {
-        $this->ensureOwnsCartItem($request, $cartItem);
+        $this->ensureCartItemOwner($request, $cartItem);
         $cartItem->delete();
 
         $message = 'Removed from your bag.';
 
         if ($request->expectsJson()) {
-            $items = $request->user()
-                ->cartItems()
-                ->with('product')
+            $items = $this->scopedCartItems($request, ['product.brand'])
                 ->latest('added_at')
                 ->get();
 
@@ -165,9 +166,7 @@ class CartController extends Controller
             'code' => ['required', 'string', 'max:50'],
         ]);
 
-        $items = $request->user()
-            ->cartItems()
-            ->with('product')
+        $items = $this->scopedCartItems($request, ['product'])
             ->get();
 
         if ($items->isEmpty()) {
@@ -175,8 +174,6 @@ class CartController extends Controller
                 ->withInput($request->only('code'))
                 ->with('coupon_status', 'Add items to your bag before applying a coupon.');
         }
-
-        $user = $request->user();
 
         $code = strtoupper($data['code']);
         $coupon = Coupon::where('code', $code)->first();
@@ -189,7 +186,15 @@ class CartController extends Controller
 
         $assignment = null;
 
+        $user = $request->user();
+
         if ($coupon->requires_assignment) {
+            if (! $user) {
+                return back()
+                    ->withInput($request->only('code'))
+                    ->with('coupon_status', 'Log in to claim invitation-only rewards and coupons.');
+            }
+
             $assignment = $user->userCoupons()
                 ->where('coupon_id', $coupon->id)
                 ->first();
@@ -235,12 +240,5 @@ class CartController extends Controller
         $request->session()->forget('cart.coupon');
 
         return back()->with('coupon_status', 'Coupon removed from your bag.');
-    }
-
-    protected function ensureOwnsCartItem(Request $request, CartItem $cartItem): void
-    {
-        if ($cartItem->user_id !== $request->user()->id) {
-            abort(403);
-        }
     }
 }

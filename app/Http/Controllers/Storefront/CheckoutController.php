@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Storefront;
 
+use App\Http\Controllers\Concerns\InteractsWithCart;
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
 use App\Support\CartSummary;
@@ -11,12 +12,13 @@ use Illuminate\View\View;
 
 class CheckoutController extends Controller
 {
+    use InteractsWithCart;
+
     public function index(Request $request): View|RedirectResponse
     {
         $user = $request->user();
 
-        $items = $user->cartItems()
-            ->with('product.brand')
+        $items = $this->scopedCartItems($request, ['product.brand'])
             ->latest('added_at')
             ->get();
 

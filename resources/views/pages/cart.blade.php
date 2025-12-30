@@ -192,5 +192,8 @@
             @endif
         </div>
     </div>
+    @guest
+        <x-login-reward-modal />
+    @endguest
 </x-layout.page>
 @endsection
