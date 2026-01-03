@@ -12,9 +12,10 @@
         $brandSummary = $primaryBrand->summary ?? 'Hand-finished outfits designed for life between Karachi and Toronto.';
         $brandShopUrl = $primaryBrand ? route('shop.brand', $primaryBrand->slug) : route('shop');
         $startingPrice = data_get($sliderCollection->sortBy('price_value')->first(), 'price', '$129');
+        $bannerImage = asset('assets/img/bannere.png');
         $heroSlides = [
             [
-                'image' => asset('assets/img/banner-slide-1.jpg'),
+                'image' => $bannerImage,
                 'modifier' => '',
                 'subtitle' => $brandTagline,
                 'title' => "{$brandName} Signature Wardrobe",
@@ -24,7 +25,7 @@
                 'cta_url' => $brandShopUrl,
             ],
             [
-                'image' => asset('assets/img/banner-slide-2.jpg'),
+                'image' => $bannerImage,
                 'modifier' => 'ul-banner-slide--2',
                 'subtitle' => "{$brandName} seasonal layers",
                 'title' => 'From desert evenings to downtown strolls',
@@ -34,7 +35,7 @@
                 'cta_url' => $brandShopUrl,
             ],
             [
-                'image' => asset('assets/img/banner-slide-3.jpg'),
+                'image' => $bannerImage,
                 'modifier' => 'ul-banner-slide--3',
                 'subtitle' => "{$brandName} limited release",
                 'title' => 'Five outfits, countless journeys',
@@ -488,7 +489,7 @@
         <div class="ul-container">
             <div class="ul-video">
                 <div>
-                    <img src="{{ asset('assets/img/video-banner.jpg') }}" alt="Video Banner" class="ul-video-cover">
+                    <img src="{{ asset('assets/img/big.png') }}" alt="Video Banner" class="ul-video-cover">
                 </div>
                 <a href="https://youtu.be/cNOKQIw81SE?si=iwUyBvpTD3h8DpFK" data-fslightbox="video" class="ul-video-btn"><i class="flaticon-play-button-arrowhead"></i></a>
             </div>
