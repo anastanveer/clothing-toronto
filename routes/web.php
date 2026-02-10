@@ -1,60 +1,145 @@
 <?php
 
-use App\Http\Controllers\AdminAuthController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\AdminOrderController;
-use App\Http\Controllers\AdminProductController;
-use App\Http\Controllers\AdminSettingsController;
-use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AnnouncementController as AdminAnnouncementController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\BlogPostController;
+use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\LogController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Storefront\AuthController as StorefrontAuthController;
+use App\Http\Controllers\Storefront\HomeController;
+use App\Http\Controllers\Storefront\ShopController;
+use App\Http\Controllers\Storefront\BlogController;
+use App\Http\Controllers\Storefront\UserDashboardController;
+use App\Http\Controllers\Storefront\WishlistController;
+use App\Http\Controllers\Storefront\CartController;
+use App\Http\Controllers\Storefront\HeaderMetricsController;
+use App\Http\Controllers\Storefront\CheckoutController;
+use App\Http\Controllers\Storefront\NotificationCenterController;
+use App\Http\Controllers\Storefront\SocialLoginController;
+use App\Http\Controllers\Storefront\ForgotPasswordController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 
-Route::get('/', [PageController::class, 'home'])->name('home');
-Route::get('/brands/{brand}', [PageController::class, 'brand'])->name('brands.show');
-Route::get('/brands/{brand}/collections/{slug}', [PageController::class, 'brandCollection'])->name('brands.collections.show');
-Route::get('/brands/{brand}/collections/{collection}/products/{slug}', [PageController::class, 'brandProduct'])->name('brands.products.show');
-Route::get('/collections/{slug}', [PageController::class, 'collection'])->name('collections.show');
-Route::get('/collections/{collection}/products/{slug}', [PageController::class, 'product'])->name('products.show');
-Route::get('/search', [PageController::class, 'search'])->name('search');
-Route::get('/wishlist', [PageController::class, 'wishlist'])->name('wishlist');
-Route::get('/cart', [PageController::class, 'cart'])->name('cart');
-Route::get('/checkout', [PageController::class, 'checkout'])->name('checkout');
-Route::post('/checkout', [CheckoutController::class, 'place'])->name('checkout.place');
-Route::get('/checkout/thanks/{orderNumber}', [CheckoutController::class, 'success'])->name('checkout.success');
-Route::get('/track-order', [PageController::class, 'trackOrder'])->name('orders.track');
-Route::get('/api/products', [PageController::class, 'productsApi'])->name('api.products');
-Route::get('/policy', [PageController::class, 'policy'])->name('policy');
-Route::get('/lookbook', [PageController::class, 'lookbook'])->name('lookbook');
+Route::get('/', HomeController::class)->name('home');
 
-Route::get('/admin/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
-Route::post('/admin/login', [AdminAuthController::class, 'login'])->name('admin.login.submit');
-Route::post('/admin/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+Route::get('/shop', [ShopController::class, 'index'])->name('shop');
+Route::get('/shop/category/{category}', [ShopController::class, 'category'])
+    ->name('shop.category')
+    ->whereIn('category', ['men', 'women', 'kids']);
+Route::get('/shop/details/{slug?}', [ShopController::class, 'show'])->name('shop.details');
+Route::get('/shop/no-sidebar', [ShopController::class, 'noSidebar'])->name('shop.no-sidebar');
+Route::get('/shop/right-sidebar', [ShopController::class, 'rightSidebar'])->name('shop.right-sidebar');
+Route::get('/shop/brand/{slug}', [ShopController::class, 'brand'])->name('shop.brand');
+Route::get('/header/metrics', HeaderMetricsController::class)->name('header.metrics');
+Route::get('/header/inbox', NotificationCenterController::class)->name('header.inbox');
 
-Route::middleware('admin.session')->prefix('admin')->group(function () {
-    Route::get('/', [AdminController::class, 'index'])->name('admin.index');
-    Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
-    Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
-    Route::patch('/orders/{order}', [AdminOrderController::class, 'update'])->name('admin.orders.update');
-    Route::delete('/orders/{order}', [AdminOrderController::class, 'destroy'])->name('admin.orders.destroy');
-    Route::post('/sync', [AdminController::class, 'sync'])->name('admin.sync');
-    Route::post('/popular', [AdminController::class, 'updatePopular'])->name('admin.popular');
-    Route::post('/settings/currency', [AdminSettingsController::class, 'updateCurrency'])->name('admin.settings.currency');
-    Route::post('/settings/currency/live', [AdminSettingsController::class, 'fetchLiveRate'])->name('admin.settings.currency.live');
-    Route::get('/settings/currency/live-rate', [AdminSettingsController::class, 'liveRatePreview'])->name('admin.settings.currency.live_rate');
-    Route::post('/settings/bank', [AdminSettingsController::class, 'updateBankDetails'])->name('admin.settings.bank');
-    Route::get('/products', [AdminProductController::class, 'index'])->name('admin.products.index');
-    Route::get('/products/create', [AdminProductController::class, 'create'])->name('admin.products.create');
-    Route::post('/products', [AdminProductController::class, 'store'])->name('admin.products.store');
-    Route::get('/products/{product}', [AdminProductController::class, 'edit'])->name('admin.products.edit');
-    Route::put('/products/{product}', [AdminProductController::class, 'update'])->name('admin.products.update');
-    Route::delete('/products/{product}', [AdminProductController::class, 'destroy'])->name('admin.products.destroy');
-    Route::post('/products/{product}/variants', [AdminProductController::class, 'storeVariant'])->name('admin.products.variants.store');
-    Route::put('/variants/{variant}', [AdminProductController::class, 'updateVariant'])->name('admin.variants.update');
-    Route::delete('/variants/{variant}', [AdminProductController::class, 'destroyVariant'])->name('admin.variants.destroy');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [StorefrontAuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [StorefrontAuthController::class, 'login'])->name('login.submit');
+
+    Route::get('/signup', [StorefrontAuthController::class, 'showRegistrationForm'])->name('signup');
+    Route::post('/signup', [StorefrontAuthController::class, 'register'])->name('signup.submit');
+
+    Route::get('/forgot-password', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [ForgotPasswordController::class, 'reset'])->name('password.update');
+
+    Route::get('/auth/{provider}/redirect', [SocialLoginController::class, 'redirect'])
+        ->whereIn('provider', ['google', 'facebook'])
+        ->name('social.redirect');
+    Route::get('/auth/{provider}/callback', [SocialLoginController::class, 'callback'])
+        ->whereIn('provider', ['google', 'facebook'])
+        ->name('social.callback');
 });
 
-Route::redirect('/index.html', '/');
-Route::redirect('/winter-25.html', '/collections/winter25');
-Route::redirect('/policy.html', '/policy');
-Route::redirect('/lookbook.html', '/lookbook');
-Route::redirect('/shop', '/collections/men-all');
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [StorefrontAuthController::class, 'logout'])->name('logout');
+    Route::get('/account/dashboard', [UserDashboardController::class, 'index'])->name('account.dashboard');
+    Route::get('/wishlist', [WishlistController::class, 'index'])->name('wishlist');
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::delete('/wishlist/{wishlistItem}', [WishlistController::class, 'destroy'])->name('wishlist.destroy');
+});
+
+Route::get('/cart', [CartController::class, 'index'])->name('cart');
+Route::post('/cart/items', [CartController::class, 'store'])->name('cart.items.store');
+Route::patch('/cart/items/{cartItem}', [CartController::class, 'update'])->name('cart.items.update');
+Route::delete('/cart/items/{cartItem}', [CartController::class, 'destroy'])->name('cart.items.destroy');
+Route::post('/cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.coupon.apply');
+Route::delete('/cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.remove');
+Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+
+Route::view('/our-store', 'pages.our-store')->name('our-store');
+Route::view('/contact', 'pages.contact')->name('contact');
+Route::view('/faq', 'pages.faq')->name('faq');
+Route::view('/about', 'pages.about')->name('about');
+Route::view('/reviews', 'pages.reviews')->name('reviews');
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog');
+Route::get('/blog/details/{slug?}', [BlogController::class, 'show'])->name('blog.details');
+Route::get('/blog/classic', [BlogController::class, 'classic'])->name('blog.two');
+
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
+        Route::post('login', [AuthController::class, 'login'])->name('login.submit');
+    });
+
+    Route::middleware('admin')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+        Route::get('/', DashboardController::class)->name('dashboard');
+
+        Route::resource('products', ProductController::class)->parameters([
+            'products' => 'product',
+        ])->except(['show']);
+
+        Route::middleware('admin.full')->group(function () {
+            Route::get('users', [UserController::class, 'index'])->name('users.index');
+            Route::resource('brands', BrandController::class)
+                ->parameters(['brands' => 'brand']);
+            Route::patch('brands/{brand}/toggle-status', [BrandController::class, 'toggleStatus'])
+                ->name('brands.toggle-status');
+
+            Route::resource('coupons', AdminCouponController::class)
+                ->parameters(['coupons' => 'coupon'])
+                ->except(['show']);
+
+            Route::resource('announcements', AdminAnnouncementController::class)
+                ->parameters(['announcements' => 'announcement'])
+                ->except(['show']);
+
+            Route::resource('blog', BlogPostController::class)->parameters([
+                'blog' => 'blog',
+            ])->except(['show']);
+
+            Route::get('logs', LogController::class)->name('logs');
+        });
+    });
+});
+
+// Legacy .html support
+foreach ([
+    'index' => '/',
+    'shop' => '/shop',
+    'shop-details' => '/shop/details',
+    'shop-no-sidebar' => '/shop/no-sidebar',
+    'shop-right-sidebar' => '/shop/right-sidebar',
+    'cart' => '/cart',
+    'checkout' => '/checkout',
+    'wishlist' => '/wishlist',
+    'login' => '/login',
+    'signup' => '/signup',
+    'our-store' => '/our-store',
+    'contact' => '/contact',
+    'faq' => '/faq',
+    'about' => '/about',
+    'reviews' => '/reviews',
+    'blog' => '/blog',
+    'blog-details' => '/blog/details',
+    'blog-2' => '/blog/classic',
+] as $legacy => $route) {
+    Route::redirect("/{$legacy}.html", $route);
+}

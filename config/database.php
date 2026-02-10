@@ -2,11 +2,6 @@
 
 use Illuminate\Support\Str;
 
-$sqliteDatabase = env('DB_DATABASE');
-if (is_string($sqliteDatabase) && $sqliteDatabase !== '' && !str_starts_with($sqliteDatabase, '/')) {
-    $sqliteDatabase = base_path($sqliteDatabase);
-}
-
 return [
 
     /*
@@ -39,7 +34,7 @@ return [
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'database' => $sqliteDatabase ?: database_path('database.sqlite'),
+            'database' => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
             'busy_timeout' => null,
