@@ -2,79 +2,99 @@
 
 namespace App\Models;
 
-use App\Models\Brand;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasFactory;
-    use SoftDeletes;
-
-    public const CATEGORIES = [
-        'men',
-        'women',
-        'kids',
-    ];
-
     protected $fillable = [
-        'name',
-        'slug',
-        'sku',
-        'category',
-        'brand_id',
-        'summary',
-        'description',
+        'shopify_id',
+        'brand_key',
+        'title',
+        'handle',
+        'body_html',
+        'product_type',
+        'vendor',
+        'tags',
+        'is_popular',
         'price',
-        'sale_price',
-        'average_rating',
-        'reviews_count',
-        'stock',
-        'primary_color',
-        'is_featured',
-        'status',
-        'meta_title',
-        'meta_description',
-        'featured_image',
-        'gallery_images',
-        'options',
+        'compare_at_price',
+        'discount_type',
+        'discount_value',
+        'discount_starts_at',
+        'discount_ends_at',
+        'available',
+        'source_created_at',
+        'source_updated_at',
     ];
 
     protected $casts = [
+        'available' => 'boolean',
+        'is_popular' => 'boolean',
         'price' => 'decimal:2',
-        'sale_price' => 'decimal:2',
-        'average_rating' => 'decimal:2',
-        'reviews_count' => 'integer',
-        'is_featured' => 'boolean',
-        'gallery_images' => 'array',
-        'options' => 'array',
+        'compare_at_price' => 'decimal:2',
+        'discount_value' => 'decimal:2',
+        'discount_starts_at' => 'datetime',
+        'discount_ends_at' => 'datetime',
+        'source_created_at' => 'datetime',
+        'source_updated_at' => 'datetime',
     ];
 
-    public function brand(): BelongsTo
+    public function collections()
     {
-        return $this->belongsTo(Brand::class);
+        return $this->belongsToMany(Collection::class);
     }
 
-    public function wishlistItems(): HasMany
+    public function variants()
     {
-        return $this->hasMany(WishlistItem::class);
+        return $this->hasMany(ProductVariant::class);
     }
 
-    public function cartItems(): HasMany
+    public function images()
     {
-        return $this->hasMany(CartItem::class);
+        return $this->hasMany(ProductImage::class);
     }
 
-    public function likes(): HasMany
+    public function hasActiveDiscount(): bool
     {
-        return $this->hasMany(ProductLike::class);
+        if (!$this->discount_type || !$this->discount_value) {
+            return false;
+        }
+
+        $now = now();
+        if ($this->discount_starts_at && $now->lt($this->discount_starts_at)) {
+            return false;
+        }
+
+        if ($this->discount_ends_at && $now->gt($this->discount_ends_at)) {
+            return false;
+        }
+
+        return true;
     }
 
-    public function orderItems(): HasMany
+    public function discountedPrice(): ?float
     {
-        return $this->hasMany(OrderItem::class);
+        if (!$this->price || !$this->hasActiveDiscount()) {
+            return null;
+        }
+
+        $price = (float) $this->price;
+        $value = (float) $this->discount_value;
+
+        if ($this->discount_type === 'percent') {
+            $percent = max(min($value, 100), 0);
+            return round($price * (1 - ($percent / 100)), 2);
+        }
+
+        if ($this->discount_type === 'fixed') {
+            return round(max($price - $value, 0), 2);
+        }
+
+        return null;
+    }
+
+    public function effectivePrice(): ?float
+    {
+        return $this->discountedPrice() ?? ($this->price ? (float) $this->price : null);
     }
 }

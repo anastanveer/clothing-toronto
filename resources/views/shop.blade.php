@@ -1,0 +1,365 @@
+@extends('layouts.app')
+
+@section('content')
+  <main class="kb-collection">
+    <div class="container">
+      @php
+        $resolvedBrandKey = $brandKey ?? ($catalogDefaultBrand ?? 'toronto-textile');
+        $defaultBrandKey = $catalogDefaultBrand ?? $resolvedBrandKey;
+        $useBrandRoutes = $resolvedBrandKey !== $defaultBrandKey;
+        $accessoryCategories = $catalogCategories['accessories'] ?? [];
+        $accessorySlugs = collect($accessoryCategories)->pluck('slug')->all();
+        $priceValues = collect($products)->map(function ($product) {
+            $isModel = $product instanceof \App\Models\Product;
+            $basePrice = $isModel ? $product->effectivePrice() : ($product['price'] ?? null);
+            if (!is_numeric($basePrice)) {
+                $basePrice = (float) preg_replace('/[^\d.]/', '', (string) $basePrice);
+            }
+            return \App\Support\CurrencyFormatter::convert($basePrice);
+        })->filter(fn ($price) => $price !== null)->values();
+        $minPrice = (int) floor($priceValues->min() ?? 0);
+        $maxPrice = (int) ceil($priceValues->max() ?? 10000);
+        if ($maxPrice < $minPrice) {
+            $maxPrice = $minPrice;
+        }
+        $range = $maxPrice - $minPrice;
+        if ($range < 10) {
+            $pad = max((int) round($maxPrice * 0.1), 100);
+            $minPrice = max(0, $minPrice - $pad);
+            $maxPrice = $maxPrice + $pad;
+            $range = $maxPrice - $minPrice;
+        }
+        if ($range <= 0) {
+            $maxPrice = $minPrice + 1;
+            $range = 1;
+        }
+        $priceStep = max((int) round($range / 200), 1);
+      @endphp
+      <div class="row g-4">
+        <aside class="col-12 col-lg-3 kb-shop-sidebar" id="kb-mobile-filters" data-mobile-filter-panel>
+          <div class="kb-sidebar">
+            <div class="kb-filter">
+              <div class="kb-filter-title">Categories</div>
+              @php
+                $menOpen = \Illuminate\Support\Str::contains($collectionSlug ?? '', 'men');
+                $womenOpen = \Illuminate\Support\Str::contains($collectionSlug ?? '', 'women');
+                $accessoriesOpen = in_array($collectionSlug ?? '', $accessorySlugs, true) || ($collectionSlug ?? '') === 'accessories';
+              @endphp
+              <button class="kb-filter-toggle {{ $menOpen ? 'is-open' : '' }}" type="button" data-filter-toggle="men" aria-expanded="{{ $menOpen ? 'true' : 'false' }}">
+                <span>Men</span>
+                <span class="kb-toggle-icon">+</span>
+              </button>
+              <ul class="kb-filter-list kb-collapse {{ $menOpen ? 'is-open' : '' }}" data-filter-panel="men">
+                <li>
+                  <a href="{{ $useBrandRoutes ? route('brands.collections.show', ['brand' => $resolvedBrandKey, 'slug' => 'men-all']) : route('collections.show', ['slug' => 'men-all']) }}">
+                    <span>All Men</span>
+                  </a>
+                </li>
+                @foreach ($sidebarMen ?? [] as $collection)
+                  @continue($collection->handle === 'men-all')
+                  <li>
+                    <a href="{{ $useBrandRoutes ? route('brands.collections.show', ['brand' => $resolvedBrandKey, 'slug' => $collection->handle]) : route('collections.show', ['slug' => $collection->handle]) }}">
+                      <span>{{ $collection->title }}</span>
+                      <span class="kb-count">{{ $collection->products_count ?? '' }}</span>
+                    </a>
+                  </li>
+                @endforeach
+              </ul>
+
+              <button class="kb-filter-toggle {{ $womenOpen ? 'is-open' : '' }}" type="button" data-filter-toggle="women" aria-expanded="{{ $womenOpen ? 'true' : 'false' }}">
+                <span>Women</span>
+                <span class="kb-toggle-icon">+</span>
+              </button>
+              <ul class="kb-filter-list kb-collapse {{ $womenOpen ? 'is-open' : '' }}" data-filter-panel="women">
+                <li>
+                  <a href="{{ $useBrandRoutes ? route('brands.collections.show', ['brand' => $resolvedBrandKey, 'slug' => 'women-all']) : route('collections.show', ['slug' => 'women-all']) }}">
+                    <span>All Women</span>
+                  </a>
+                </li>
+                @foreach ($sidebarWomen ?? [] as $collection)
+                  @continue($collection->handle === 'women-all')
+                  <li>
+                    <a href="{{ $useBrandRoutes ? route('brands.collections.show', ['brand' => $resolvedBrandKey, 'slug' => $collection->handle]) : route('collections.show', ['slug' => $collection->handle]) }}">
+                      <span>{{ $collection->title }}</span>
+                      <span class="kb-count">{{ $collection->products_count ?? '' }}</span>
+                    </a>
+                  </li>
+                @endforeach
+              </ul>
+
+              @if (!empty($accessoryCategories))
+                <button class="kb-filter-toggle {{ $accessoriesOpen ? 'is-open' : '' }}" type="button" data-filter-toggle="accessories" aria-expanded="{{ $accessoriesOpen ? 'true' : 'false' }}">
+                  <span>Accessories</span>
+                  <span class="kb-toggle-icon">+</span>
+                </button>
+                <ul class="kb-filter-list kb-collapse {{ $accessoriesOpen ? 'is-open' : '' }}" data-filter-panel="accessories">
+                  <li>
+                    <a href="{{ $useBrandRoutes ? route('brands.collections.show', ['brand' => $resolvedBrandKey, 'slug' => 'accessories']) : route('collections.show', ['slug' => 'accessories']) }}">
+                      <span>All Accessories</span>
+                    </a>
+                  </li>
+                  @foreach ($accessoryCategories as $category)
+                    <li>
+                      <a href="{{ $useBrandRoutes ? route('brands.collections.show', ['brand' => $resolvedBrandKey, 'slug' => $category['slug']]) : route('collections.show', ['slug' => $category['slug']]) }}">
+                        <span>{{ $category['label'] }}</span>
+                      </a>
+                    </li>
+                  @endforeach
+                </ul>
+              @endif
+            </div>
+
+            <div class="kb-filter">
+              <div class="kb-filter-title">Availability</div>
+              <label class="kb-check">
+                <input type="checkbox" checked>
+                In stock ({{ $inStockCount ?? $results }})
+              </label>
+            </div>
+
+            @if (!empty($colorFilters))
+              <div class="kb-filter" data-color-filter>
+                <div class="kb-filter-title">Colors</div>
+                <div class="kb-color-filter">
+                  <button class="kb-color-option is-active" type="button" data-color-option="all">
+                    <span class="kb-color-dot kb-color-dot--all"></span>
+                    <span>All</span>
+                  </button>
+                  @foreach ($colorFilters as $color)
+                    <button class="kb-color-option" type="button" data-color-option="{{ $color['key'] }}" style="--swatch: {{ $color['value'] }};">
+                      <span class="kb-color-dot"></span>
+                      <span>{{ $color['label'] }}</span>
+                    </button>
+                  @endforeach
+                </div>
+              </div>
+            @endif
+
+            <div class="kb-filter">
+              <div class="kb-filter-title">Price</div>
+              <div class="kb-price-filter" data-price-symbol="{{ \App\Support\CurrencyFormatter::symbol() }}">
+                <div class="kb-range-stack">
+                  <input class="kb-range kb-range--min" type="range" min="{{ $minPrice }}" max="{{ $maxPrice }}" step="{{ $priceStep }}" value="{{ $minPrice }}" data-price-min-range>
+                  <input class="kb-range kb-range--max" type="range" min="{{ $minPrice }}" max="{{ $maxPrice }}" step="{{ $priceStep }}" value="{{ $maxPrice }}" data-price-max-range>
+                </div>
+                <div class="kb-range-values">
+                  <span data-price-min>{{ \App\Support\CurrencyFormatter::symbol() }} {{ number_format($minPrice, 2) }}</span>
+                  <span data-price-selected>{{ \App\Support\CurrencyFormatter::symbol() }} {{ number_format($minPrice, 2) }} - {{ \App\Support\CurrencyFormatter::symbol() }} {{ number_format($maxPrice, 2) }}</span>
+                  <span data-price-max>{{ \App\Support\CurrencyFormatter::symbol() }} {{ number_format($maxPrice, 2) }}</span>
+                </div>
+                <div class="kb-price-feedback" data-price-feedback></div>
+                <button class="kb-btn-outline kb-price-reset" type="button" data-price-reset>Reset Filter</button>
+              </div>
+            </div>
+
+            <div class="kb-filter">
+              <div class="kb-filter-title">Popular Product</div>
+              @if (!empty($popularProducts) && $popularProducts->count())
+                @foreach ($popularProducts as $popular)
+                  @php
+                    $image = optional($popular->images->sortBy('position')->first())->src;
+                    $price = \App\Support\CurrencyFormatter::format($popular->effectivePrice());
+                  @endphp
+                  <div class="kb-mini">
+                    @if ($image)
+                      <img class="kb-mini-thumb" src="{{ $image }}" alt="{{ $popular->title }}">
+                    @else
+                      <div class="kb-mini-thumb"></div>
+                    @endif
+                    <div>
+                      <div class="kb-mini-title">{{ $popular->title }}</div>
+                      <div class="kb-mini-price">{{ $price }}</div>
+                    </div>
+                  </div>
+                @endforeach
+              @else
+                  <div class="kb-mini">
+                    <div class="kb-mini-thumb"></div>
+                    <div>
+                      <div class="kb-mini-title">Oxford</div>
+                      <div class="kb-mini-price">{{ \App\Support\CurrencyFormatter::format(4290) }}</div>
+                    </div>
+                  </div>
+              @endif
+            </div>
+          </div>
+        </aside>
+
+        <section class="col-12 col-lg-9 kb-shop-products">
+          @php
+            $enabledBrands = collect($catalogBrands ?? [])
+              ->filter(fn ($brand) => !empty($brand['enabled']));
+            $isBrandPage = request()->routeIs('brands.*');
+            $brandLabel = $catalogBrands[$resolvedBrandKey]['label'] ?? \Illuminate\Support\Str::of($resolvedBrandKey)->replace('-', ' ')->title()->value();
+            $brandTagline = $brandProfile['tagline'] ?? 'Curated seasonal essentials for modern wardrobes.';
+          @endphp
+          @if ($enabledBrands->isNotEmpty())
+            <div class="kb-brand-strip">
+              @foreach ($enabledBrands as $brandKey => $brand)
+                <a class="kb-brand-pill {{ $resolvedBrandKey === $brandKey ? 'is-active' : '' }}" href="{{ route('brands.show', ['brand' => $brandKey]) }}">
+                  <span>{{ $brand['label'] }}</span>
+                </a>
+              @endforeach
+            </div>
+          @endif
+          @if ($isBrandPage)
+            <section class="kb-brand-hero" data-brand="{{ $resolvedBrandKey }}">
+              <div class="kb-brand-hero-inner">
+                <div>
+                  <div class="kb-brand-kicker">Brand Spotlight</div>
+                  <div class="kb-brand-title">{{ $brandLabel }}</div>
+                  <div class="kb-brand-desc">{{ $brandTagline }}</div>
+                </div>
+                <div class="kb-brand-hero-stats">
+                  <div class="kb-brand-stat">
+                    <span>Products</span>
+                    <strong>{{ $results }}</strong>
+                  </div>
+                  <div class="kb-brand-stat">
+                    <span>In Stock</span>
+                    <strong>{{ $inStockCount }}</strong>
+                  </div>
+                </div>
+              </div>
+            </section>
+          @endif
+          <div class="kb-shop-toolbar">
+            <div class="kb-shop-heading">
+              <div class="kb-page-title">{{ $pageTitle }}</div>
+              <div class="kb-view mt-2">
+                <button class="kb-view-btn active" type="button" data-view-btn="grid" aria-label="Grid view">
+                  <i class="bi bi-grid-3x3-gap"></i>
+                </button>
+                <button class="kb-view-btn" type="button" data-view-btn="list" aria-label="List view">
+                  <i class="bi bi-grid"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="kb-shop-actions">
+              <button class="kb-filter-btn" type="button" data-mobile-filter-toggle aria-controls="kb-mobile-filters" aria-expanded="false">
+                <i class="bi bi-sliders2"></i>
+                <span>Filters</span>
+              </button>
+              <div class="kb-page-sub mb-0">Showing <span data-results-count>{{ $results }}</span> Results</div>
+              <div class="kb-sort" data-sort>
+                <button class="kb-sort-toggle" type="button" data-sort-toggle aria-expanded="false">
+                  <span data-sort-label>Best Selling</span>
+                  <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="kb-sort-menu" role="listbox" aria-label="Sort products">
+                  <button class="kb-sort-option is-active" type="button" data-sort-option="best">Best Selling</button>
+                  <button class="kb-sort-option" type="button" data-sort-option="new">New Arrivals</button>
+                  <button class="kb-sort-option" type="button" data-sort-option="price-asc">Price: Low to High</button>
+                  <button class="kb-sort-option" type="button" data-sort-option="price-desc">Price: High to Low</button>
+                  <button class="kb-sort-option" type="button" data-sort-option="title">Name: A-Z</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="kb-filter-alert d-none" data-filter-alert></div>
+
+          <div class="row g-4 mt-1 kb-products-grid" data-product-grid>
+            @foreach ($products as $product)
+              @php
+                $isModel = $product instanceof \App\Models\Product;
+                $productName = $isModel ? $product->title : ($product['name'] ?? 'Product');
+                $productSlug = $isModel ? $product->handle : ($product['slug'] ?? \Illuminate\Support\Str::slug($productName));
+                $productId = $resolvedBrandKey . '::' . $productSlug;
+                $productPriceValue = $isModel ? $product->effectivePrice() : ($product['price'] ?? 0);
+                if (!is_numeric($productPriceValue)) {
+                    $productPriceValue = (float) preg_replace('/[^\d.]/', '', (string) $productPriceValue);
+                }
+                $productPrice = \App\Support\CurrencyFormatter::format($productPriceValue);
+                $compareValue = null;
+                if ($isModel && $product->hasActiveDiscount() && $product->price) {
+                    $compareValue = $product->price;
+                } elseif ($isModel && $product->compare_at_price && $product->price && $product->compare_at_price > $product->price) {
+                    $compareValue = $product->compare_at_price;
+                }
+                if (!$isModel) {
+                    $compareRaw = $product['compare_at_price'] ?? $product['compareAtPrice'] ?? null;
+                    if (is_numeric($compareRaw) && (float) $compareRaw > (float) $productPriceValue) {
+                        $compareValue = (float) $compareRaw;
+                    }
+                }
+                $comparePrice = $compareValue ? \App\Support\CurrencyFormatter::format($compareValue) : null;
+                if ($isModel) {
+                    $productImage = optional($product->images->sortBy('position')->first())->src;
+                    $productAltImage = optional($product->images->sortBy('position')->skip(1)->first())->src;
+                } else {
+                    $productImage = $product['image'] ?? data_get($product, 'gallery.0.src');
+                    $productAltImage = $product['alt_image'] ?? data_get($product, 'gallery.1.src');
+                }
+                $productDesc = $isModel
+                    ? strip_tags($product->body_html ?? '')
+                    : strip_tags((string) ($product['description'] ?? $product['body_html'] ?? 'Classic winter fabric.'));
+                $filterPrice = \App\Support\CurrencyFormatter::convert($productPriceValue) ?? 0;
+                $badge = \App\Support\ProductBadge::resolve($product, $compareValue);
+              @endphp
+              @php
+                $createdTimestamp = 0;
+                if ($isModel && $product->source_created_at) {
+                    $createdTimestamp = $product->source_created_at->timestamp;
+                } elseif ($isModel && $product->created_at) {
+                    $createdTimestamp = $product->created_at->timestamp;
+                } elseif (is_array($product) && !empty($product['created_at'])) {
+                    $createdTimestamp = (int) strtotime($product['created_at']);
+                }
+              @endphp
+              @php
+                $colorList = $colorMap[$productSlug] ?? [];
+              @endphp
+              <div class="col-6 col-md-4 kb-product-col" data-price-value="{{ $filterPrice }}" data-title="{{ \Illuminate\Support\Str::of($productName)->lower() }}" data-created="{{ $createdTimestamp }}" data-colors="{{ implode(',', $colorList) }}">
+                <div class="kb-product-card position-relative">
+                  @if ($badge)
+                    <span class="{{ $badge['class'] }}">{{ $badge['label'] }}</span>
+                  @endif
+                  <div class="kb-product-media">
+                    <a class="text-decoration-none text-dark" href="{{ $useBrandRoutes ? route('brands.products.show', ['brand' => $resolvedBrandKey, 'collection' => $collectionSlug ?? 'men-all', 'slug' => $productSlug]) : route('products.show', ['collection' => $collectionSlug ?? 'men-all', 'slug' => $productSlug]) }}">
+                      @if ($productImage)
+                        <img class="kb-product-img kb-product-img--main kb-ratio-tall" src="{{ $productImage }}" alt="{{ $productName }}">
+                      @else
+                        <div class="kb-ph kb-ratio-tall no-label"></div>
+                      @endif
+                      @if ($productAltImage)
+                        <img class="kb-product-img kb-product-img--alt kb-ratio-tall" src="{{ $productAltImage }}" alt="{{ $productName }}">
+                      @endif
+                    </a>
+                    <div class="kb-product-actions">
+                      <button class="kb-action-btn js-cart" type="button" data-product-id="{{ $productId }}" aria-label="Add to cart">
+                        <i class="bi bi-bag"></i>
+                      </button>
+                      <button class="kb-action-btn js-wishlist" type="button" data-product-id="{{ $productId }}" aria-label="Wishlist">
+                        <i class="bi bi-heart"></i>
+                      </button>
+                    <button class="kb-action-btn js-zoom" type="button"
+                      data-title="{{ $productName }}"
+                      data-price="{{ $productPrice }}"
+                      data-image="{{ $productImage }}"
+                      data-description="{{ \Illuminate\Support\Str::limit($productDesc, 220) }}"
+                      data-url="{{ $useBrandRoutes ? route('brands.products.show', ['brand' => $resolvedBrandKey, 'collection' => $collectionSlug ?? 'men-all', 'slug' => $productSlug]) : route('products.show', ['collection' => $collectionSlug ?? 'men-all', 'slug' => $productSlug]) }}"
+                      data-product-id="{{ $productId }}"
+                      aria-label="Quick view">
+                      <i class="bi bi-zoom-in"></i>
+                    </button>
+                    </div>
+                  </div>
+                  <div class="name">{{ $productName }}</div>
+                  <div class="price">
+                    {{ $productPrice }}
+                    @if ($comparePrice)
+                      <span class="kb-compare-price">{{ $comparePrice }}</span>
+                    @endif
+                  </div>
+                  <div class="kb-product-desc">{{ \Illuminate\Support\Str::limit($productDesc, 140) }}</div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+@endsection

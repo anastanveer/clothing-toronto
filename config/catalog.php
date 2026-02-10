@@ -1,133 +1,69 @@
 <?php
 
 return [
-    'primary_brand_slug' => env('PRIMARY_BRAND_SLUG', 'khanabadosh'),
-    'limit_to_primary_brand' => (bool) env('LIMIT_TO_PRIMARY_BRAND', true),
-
-    'products' => [
-        'standard' => [
-            [
-                'title' => 'Orange Airsuit',
-                'category' => 'Fashion Bag',
-                'category_route' => 'shop',
-                'price' => '$99.00',
-                'discount' => '25% Off',
-                'image' => 'assets/img/product-img-1.jpg',
-            ],
-            [
-                'title' => 'Round Neck T-shirt',
-                'category' => 'Summer Wear',
-                'category_route' => 'shop',
-                'price' => '$89.00',
-                'discount' => '18% Off',
-                'image' => 'assets/img/product-img-2.jpg',
-            ],
-            [
-                'title' => 'Classic Denim Jacket',
-                'category' => 'Outerwear',
-                'category_route' => 'shop',
-                'price' => '$119.00',
-                'discount' => '15% Off',
-                'image' => 'assets/img/product-img-3.jpg',
-            ],
-            [
-                'title' => 'Leather Crossbody Bag',
-                'category' => 'Accessories',
-                'category_route' => 'shop',
-                'price' => '$129.00',
-                'discount' => '20% Off',
-                'image' => 'assets/img/product-img-4.jpg',
-            ],
-            [
-                'title' => 'Puffer Jacket',
-                'category' => 'Winter Wear',
-                'category_route' => 'shop',
-                'price' => '$149.00',
-                'discount' => '30% Off',
-                'image' => 'assets/img/product-img-5.jpg',
-            ],
-            [
-                'title' => 'Sporty Sneakers',
-                'category' => 'Footwear',
-                'category_route' => 'shop',
-                'price' => '$135.00',
-                'discount' => '22% Off',
-                'image' => 'assets/img/product-img-6.jpg',
-            ],
+    'store' => [
+        'name' => env('STORE_NAME', 'Toronto Textile'),
+        'tagline' => env('STORE_TAGLINE', 'Canadian essentials for every season.'),
+        'support_email' => env('STORE_SUPPORT_EMAIL', 'support@torontotextile.ca'),
+        'phone' => env('STORE_PHONE', '+1 437 551 9575'),
+        'city' => env('STORE_CITY', 'Toronto, Ontario'),
+        'country' => env('STORE_COUNTRY', 'Canada'),
+    ],
+    'order_notification_emails' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('ORDER_NOTIFICATION_EMAILS', 'support@torontotextile.ca'))
+    ))),
+    'local_json_path' => env('CATALOG_LOCAL_JSON_PATH', base_path()),
+    'default_brand' => env('CATALOG_DEFAULT_BRAND', 'khanabadosh'),
+    'brands' => [
+        'toronto-textile' => [
+            'label' => 'Toronto Textile',
+            'source_url' => env('TORONTO_TEXTILE_SOURCE_URL', ''),
+            'enabled' => false,
         ],
-        'compact' => [
-            [
-                'title' => 'Orange Airsuit',
-                'category' => 'Fashion Bag',
-                'price' => '$99.00',
-                'image' => 'assets/img/product-img-sm-1.jpg',
-            ],
-            [
-                'title' => 'Round Neck T-shirt',
-                'category' => 'Summer Wear',
-                'price' => '$89.00',
-                'image' => 'assets/img/product-img-sm-2.jpg',
-            ],
-            [
-                'title' => 'Classic Denim Jacket',
-                'category' => 'Outerwear',
-                'price' => '$119.00',
-                'image' => 'assets/img/product-img-sm-3.jpg',
-            ],
-            [
-                'title' => 'Leather Crossbody Bag',
-                'category' => 'Accessories',
-                'price' => '$129.00',
-                'image' => 'assets/img/product-img-sm-4.jpg',
-            ],
-            [
-                'title' => 'Puffer Jacket',
-                'category' => 'Winter Wear',
-                'price' => '$149.00',
-                'image' => 'assets/img/product-img-sm-5.jpg',
-            ],
-            [
-                'title' => 'Sporty Sneakers',
-                'category' => 'Footwear',
-                'price' => '$135.00',
-                'image' => 'assets/img/product-img-sm-6.jpg',
-            ],
-            [
-                'title' => 'Relaxed Fit Hoodie',
-                'category' => 'Casual Wear',
-                'price' => '$75.00',
-                'image' => 'assets/img/product-img-sm-7.jpg',
-            ],
-            [
-                'title' => 'High-rise Jeans',
-                'category' => 'Denim',
-                'price' => '$110.00',
-                'image' => 'assets/img/product-img-sm-8.jpg',
-            ],
-            [
-                'title' => 'Midnight Sunglasses',
-                'category' => 'Accessories',
-                'price' => '$55.00',
-                'image' => 'assets/img/product-img-sm-9.jpg',
-            ],
-            [
-                'title' => 'Everyday Tote',
-                'category' => 'Bags',
-                'price' => '$92.00',
-                'image' => 'assets/img/product-img-sm-10.jpg',
-            ],
-            [
-                'title' => 'Minimalist Watch',
-                'category' => 'Accessories',
-                'price' => '$210.00',
-                'image' => 'assets/img/product-img-sm-11.jpg',
-            ],
-            [
-                'title' => 'Printed Scarf',
-                'category' => 'Accessories',
-                'price' => '$45.00',
-                'image' => 'assets/img/product-img-sm-12.jpg',
-            ],
+        'khanabadosh' => [
+            'label' => 'Khanabadosh',
+            'source_url' => env('KHANABADOSH_SOURCE_URL', 'https://khanabadoshonline.com'),
+            'enabled' => true,
+        ],
+        'demo-brand' => [
+            'label' => 'Studio Vale',
+            'source_url' => env('DEMO_BRAND_SOURCE_URL', ''),
+            'enabled' => true,
+        ],
+        'northline' => [
+            'label' => 'Northline',
+            'source_url' => env('NORTHLINE_SOURCE_URL', ''),
+            'enabled' => true,
+        ],
+        'harbour-loom' => [
+            'label' => 'Harbour Loom',
+            'source_url' => env('HARBOUR_LOOM_SOURCE_URL', ''),
+            'enabled' => true,
+        ],
+        'sable-atelier' => [
+            'label' => 'Sable Atelier',
+            'source_url' => env('SABLE_ATELIER_SOURCE_URL', ''),
+            'enabled' => true,
+        ],
+    ],
+    'categories' => [
+        'primary' => [
+            ['label' => 'Women', 'slug' => 'women-all'],
+            ['label' => 'Men', 'slug' => 'men-all'],
+            ['label' => 'Outerwear', 'slug' => 'outerwear'],
+            ['label' => 'Activewear', 'slug' => 'activewear'],
+            ['label' => 'Accessories', 'slug' => 'accessories'],
+            ['label' => 'Kids & Baby', 'slug' => 'kids-baby'],
+            ['label' => 'Home Textiles', 'slug' => 'home-textiles'],
+        ],
+        'accessories' => [
+            ['label' => 'Caps', 'slug' => 'caps'],
+            ['label' => 'Glasses', 'slug' => 'glasses'],
+            ['label' => 'Watches', 'slug' => 'watches'],
+            ['label' => 'Bags', 'slug' => 'bags'],
+            ['label' => 'Scarves', 'slug' => 'scarves'],
+            ['label' => 'Belts', 'slug' => 'belts'],
         ],
     ],
 ];

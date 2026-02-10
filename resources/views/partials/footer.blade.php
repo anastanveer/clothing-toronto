@@ -1,116 +1,70 @@
-<footer class="ul-footer">
-    <div class="ul-inner-container">
-        <div class="ul-footer-top">
-            <div class="ul-footer-top-widget">
-                <h3 class="ul-footer-top-widget-title">Brands</h3>
-                <div class="ul-footer-top-widget-links">
-                    <a href="#">Zara</a>
-                    <a href="#">Guess</a>
-                    <a href="#">Mango</a>
-                    <a href="#">LCWaikiki</a>
-                    <a href="#">Monda</a>
-                </div>
-            </div>
+<footer class="kb-footer">
+  <div class="container">
+    <div class="row g-4">
 
-            <div class="ul-footer-top-widget">
-                <h3 class="ul-footer-top-widget-title">Categories</h3>
-                <div class="ul-footer-top-widget-links">
-                    <a href="#">Watches</a>
-                    <a href="#">Watch Accessories</a>
-                    <a href="#">Clocks</a>
-                    <a href="#">Jewellery</a>
-                    <a href="#">Women’s Collection</a>
-                </div>
-            </div>
-
-            <div class="ul-footer-top-widget">
-                <h3 class="ul-footer-top-widget-title">Accessories</h3>
-                <div class="ul-footer-top-widget-links">
-                    <a href="#">Order Tracking</a>
-                    <a href="#">Terms & Conditions</a>
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Tutorials</a>
-                    <a href="#">FAQ</a>
-                </div>
-            </div>
-
-            <div class="ul-footer-top-widget">
-                <h3 class="ul-footer-top-widget-title">Services</h3>
-                <div class="ul-footer-top-widget-links">
-                    <a href="#">Sale</a>
-                    <a href="#">Quick Ship</a>
-                    <a href="#">New Designs</a>
-                    <a href="#">Protection Plan</a>
-                    <a href="#">Gift Cards</a>
-                </div>
-            </div>
-
-            <div class="ul-footer-top-widget">
-                <h3 class="ul-footer-top-widget-title">Policies</h3>
-                <div class="ul-footer-top-widget-links">
-                    <a href="#">Policy</a>
-                    <a href="#">Dressy Inside</a>
-                    <a href="#">About Us</a>
-                    <a href="#">Company</a>
-                    <a href="#">Careers</a>
-                </div>
-            </div>
-
-            <div class="ul-footer-top-widget">
-                <h3 class="ul-footer-top-widget-title">Help</h3>
-                <div class="ul-footer-top-widget-links">
-                    <a href="#">Contact us</a>
-                    <a href="#">About us</a>
-                    <a href="#">Reviews</a>
-                    <a href="#">Terms of Service</a>
-                    <a href="#">Refund policy</a>
-                </div>
-            </div>
+      @php
+        $storeName = $catalogStore['name'] ?? 'Toronto Textile';
+        $storePhone = $catalogStore['phone'] ?? '+1 437 551 9575';
+        $storeEmail = $catalogStore['support_email'] ?? 'support@torontotextile.ca';
+      @endphp
+      <div class="col-12 col-md-3">
+        <h6>{{ strtoupper($storeName) }}</h6>
+        <div class="small mb-2">
+          {{ $catalogStore['city'] ?? 'Toronto, Ontario' }}<br>
+          {{ $catalogStore['country'] ?? 'Canada' }}
         </div>
-
-        <div class="ul-footer-middle">
-            <div class="ul-footer-middle-widget">
-                <h3 class="ul-footer-middle-widget-title">Download Our Apps</h3>
-                <div class="ul-footer-middle-widget-content">
-                    <div class="app-links">
-                        <a href="#"><img src="{{ asset('assets/img/android.png') }}" alt="Play Store Link Image"></a>
-                        <a href="#"><img src="{{ asset('assets/img/ios.png') }}" alt="App Store Link Image"></a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ul-footer-middle-widget">
-                <h3 class="ul-footer-middle-widget-title">Follow us</h3>
-                <div class="ul-footer-middle-widget-content">
-                    <div class="social-links">
-                        <a href="#"><i class="flaticon-facebook-app-symbol"></i></a>
-                        <a href="#"><i class="flaticon-twitter"></i></a>
-                        <a href="#"><i class="flaticon-linkedin-big-logo"></i></a>
-                        <a href="#"><i class="flaticon-youtube"></i></a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ul-footer-middle-widget">
-                <h3 class="ul-footer-middle-widget-title">Need help? Call now!</h3>
-                <div class="ul-footer-middle-widget-content">
-                    <div class="contact-nums">
-                        <a href="tel:1234567890">(500) 8001 8588</a>, <a href="tel:1234567890">(500) 544 6550</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="ul-footer-middle-widget align-self-center">
-                <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-2 text-decoration-none ul-footer-wordmark">
-                    {{-- <img src="{{ asset('assets/img/logo-white.svg') }}" alt="Toronto Textile logo" class="logo"> --}}
-                    <span>Toronto Textile</span>
-                </a>
-            </div>
+        <div class="small">
+          <strong>Phone:</strong> <a href="tel:{{ preg_replace('/\s+/', '', $storePhone) }}">{{ $storePhone }}</a><br>
+          <strong>Email:</strong> <a href="mailto:{{ $storeEmail }}">{{ $storeEmail }}</a>
         </div>
-
-        <div class="ul-footer-bottom">
-            <p class="copyright-txt">Copyright 2024 © <a href="https://temptics.com/" class="ul-footer-bottom-link">Temptics</a></p>
-            <img src="{{ asset('assets/img/payment-methods.png') }}" alt="payment methods logos">
+        <div class="mt-3 d-flex gap-2">
+          <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+          <a href="#" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+          <a href="#" aria-label="Youtube"><i class="bi bi-youtube"></i></a>
         </div>
+      </div>
+
+      <div class="col-6 col-md-2">
+        <h6>Information</h6>
+        <a href="{{ route('policy', ['title' => 'Shipping Policy']) }}">Shipping Policy</a><br>
+        <a href="{{ route('policy', ['title' => 'Exchange & Return Policy']) }}">Exchange & Return Policy</a><br>
+        <a href="{{ route('policy', ['title' => 'FAQs']) }}">FAQs</a><br>
+        <a href="{{ route('policy', ['title' => 'Terms & Conditions']) }}">Terms & Conditions</a><br>
+        <a href="{{ route('policy', ['title' => 'Privacy Policy']) }}">Privacy Policy</a>
+      </div>
+
+      <div class="col-6 col-md-2">
+        <h6>Quick Shop</h6>
+        <a href="{{ route('home') }}">Home</a><br>
+        <a href="{{ route('collections.show', ['slug' => 'men-all']) }}">Shop Men</a><br>
+        <a href="{{ route('collections.show', ['slug' => 'women-all']) }}">Shop Women</a><br>
+        <a href="{{ route('collections.show', ['slug' => 'accessories']) }}">Accessories</a><br>
+        <a href="#">Contact</a>
+      </div>
+
+      <div class="col-6 col-md-2">
+        <h6>Customer Services</h6>
+        <a href="#">Contact Us</a>
+      </div>
+
+      <div class="col-12 col-md-3">
+        <h6>Newsletter</h6>
+        <div class="small mb-2">Enter your email to receive daily news.</div>
+        <form class="kb-newsletter d-flex gap-2">
+          <input class="form-control" type="email" placeholder="Email address" />
+          <button class="btn" type="button">SUBSCRIBE</button>
+        </form>
+      </div>
+
     </div>
+
+    <hr class="my-4" style="border-color: rgba(255,255,255,.12)">
+
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 small">
+      <div>© 2026 {{ $storeName }}. All Rights Reserved.</div>
+      <div class="text-secondary">
+        Designed by <a href="https://torontobytes.com/" target="_blank" rel="noopener">TorontoBytes</a>
+      </div>
+    </div>
+  </div>
 </footer>
