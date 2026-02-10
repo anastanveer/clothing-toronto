@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Support\CurrencyFormatter;
+use Illuminate\Validation\Rule;
 
 class AdminProductController extends Controller
 {
@@ -17,10 +18,24 @@ class AdminProductController extends Controller
     {
         $query = Product::query()->with(['images', 'variants', 'collections']);
         $search = $request->query('q');
+        $brandFilter = $request->query('brand');
+        $brands = collect((array) config('catalog.brands', []))
+            ->filter(fn ($brand) => !empty($brand['enabled']))
+            ->map(function ($brand, $key) {
+                $brand['key'] = $key;
+                return $brand;
+            })
+            ->values();
+
+        if ($brandFilter) {
+            $query->where('brand_key', $brandFilter);
+        }
         if ($search) {
-            $query->where('title', 'like', '%' . $search . '%')
-                ->orWhere('handle', 'like', '%' . $search . '%')
-                ->orWhere('tags', 'like', '%' . $search . '%');
+            $query->where(function ($builder) use ($search) {
+                $builder->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('handle', 'like', '%' . $search . '%')
+                    ->orWhere('tags', 'like', '%' . $search . '%');
+            });
         }
 
         return view('admin.products.index', [
@@ -28,20 +43,32 @@ class AdminProductController extends Controller
             'products' => $query->orderBy('title')->get(),
             'collections' => Collection::query()->orderBy('title')->get(),
             'search' => $search,
+            'brands' => $brands,
+            'brandFilter' => $brandFilter,
         ]);
     }
 
     public function create()
     {
+        $brands = collect((array) config('catalog.brands', []))
+            ->filter(fn ($brand) => !empty($brand['enabled']))
+            ->map(function ($brand, $key) {
+                $brand['key'] = $key;
+                return $brand;
+            })
+            ->values();
+
         return view('admin.products.create', [
             'pageTitle' => 'Add Product',
             'collections' => Collection::query()->orderBy('title')->get(),
+            'brands' => $brands,
+            'selectedBrand' => old('brand_key', (string) (config('catalog.default_brand') ?? '')),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $this->validateProduct($request);
+        $data = $this->applyAccessoryTags($this->validateProduct($request));
         $handle = $data['handle'] ?: Str::slug($data['title']);
         $discountType = $data['discount_type'] ?: null;
         $discountValue = $discountType ? $data['discount_value'] : null;
@@ -55,6 +82,7 @@ class AdminProductController extends Controller
 
         $product = Product::create([
             'shopify_id' => $this->generateUniqueId(Product::class, 'shopify_id'),
+            'brand_key' => $data['brand_key'],
             'title' => $data['title'],
             'handle' => $handle,
             'body_html' => $data['body_html'],
@@ -103,17 +131,26 @@ class AdminProductController extends Controller
     public function edit(Product $product)
     {
         $product->load(['images', 'variants', 'collections']);
+        $brands = collect((array) config('catalog.brands', []))
+            ->filter(fn ($brand) => !empty($brand['enabled']))
+            ->map(function ($brand, $key) {
+                $brand['key'] = $key;
+                return $brand;
+            })
+            ->values();
 
         return view('admin.products.edit', [
             'pageTitle' => 'Edit Product',
             'product' => $product,
             'collections' => Collection::query()->orderBy('title')->get(),
+            'brands' => $brands,
+            'selectedBrand' => old('brand_key', $product->brand_key),
         ]);
     }
 
     public function update(Request $request, Product $product): RedirectResponse
     {
-        $data = $this->validateProduct($request, $product->id);
+        $data = $this->applyAccessoryTags($this->validateProduct($request, $product->id, $product->brand_key));
         $discountType = $data['discount_type'] ?: null;
         $discountValue = $discountType ? $data['discount_value'] : null;
         $discountStarts = $discountType ? $data['discount_starts_at'] : null;
@@ -125,6 +162,7 @@ class AdminProductController extends Controller
             : $discountValue;
 
         $product->update([
+            'brand_key' => $data['brand_key'],
             'title' => $data['title'],
             'handle' => $data['handle'] ?: $product->handle,
             'body_html' => $data['body_html'],
@@ -245,15 +283,30 @@ class AdminProductController extends Controller
             ->with('status', 'Variant deleted successfully.');
     }
 
-    private function validateProduct(Request $request, ?int $productId = null): array
+    private function validateProduct(Request $request, ?int $productId = null, ?string $currentBrand = null): array
     {
+        $brands = array_keys((array) config('catalog.brands', []));
+        $brandKey = (string) ($request->input('brand_key')
+            ?? $currentBrand
+            ?? (config('catalog.default_brand') ?? 'toronto-textile'));
+
         return $request->validate([
+            'brand_key' => ['required', Rule::in($brands)],
             'title' => 'required|string|max:255',
-            'handle' => 'nullable|string|max:255|unique:products,handle,' . ($productId ?? 'NULL') . ',id',
+            'handle' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('products', 'handle')
+                    ->where(fn ($query) => $query->where('brand_key', $brandKey))
+                    ->ignore($productId),
+            ],
             'body_html' => 'nullable|string',
             'product_type' => 'nullable|string|max:255',
             'vendor' => 'nullable|string|max:255',
             'tags' => 'nullable|string|max:255',
+            'accessory_tags' => 'nullable|array',
+            'accessory_tags.*' => 'string|max:255',
             'price' => 'nullable|numeric|min:0',
             'compare_at_price' => 'nullable|numeric|min:0',
             'discount_type' => 'nullable|in:percent,fixed',
@@ -267,6 +320,44 @@ class AdminProductController extends Controller
             'collections' => 'nullable|array',
             'collections.*' => 'integer|exists:collections,id',
         ]);
+    }
+
+    private function applyAccessoryTags(array $data): array
+    {
+        $accessoryLabels = collect(config('catalog.categories.accessories', []))
+            ->pluck('label')
+            ->filter()
+            ->values();
+        $accessoryLabelMap = $accessoryLabels
+            ->map(fn ($label) => strtolower(trim($label)))
+            ->filter()
+            ->values()
+            ->all();
+
+        $tagList = collect(explode(',', (string) ($data['tags'] ?? '')))
+            ->map(fn ($tag) => trim($tag))
+            ->filter()
+            ->reject(function ($tag) use ($accessoryLabelMap) {
+                $lower = strtolower($tag);
+                return $lower === 'accessories' || in_array($lower, $accessoryLabelMap, true);
+            });
+
+        $selectedAccessory = collect($data['accessory_tags'] ?? [])
+            ->map(fn ($tag) => trim($tag))
+            ->filter();
+
+        if ($selectedAccessory->isNotEmpty()) {
+            $tagList = $tagList
+                ->merge(['Accessories'])
+                ->merge($selectedAccessory);
+        }
+
+        $data['tags'] = $tagList
+            ->unique(fn ($tag) => strtolower($tag))
+            ->values()
+            ->implode(', ');
+
+        return $data;
     }
 
     private function generateUniqueId(string $modelClass, string $column): int

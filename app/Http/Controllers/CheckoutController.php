@@ -64,26 +64,47 @@ class CheckoutController extends Controller
                 ->withInput();
         }
 
-        $counts = collect($payload)
-            ->mapWithKeys(function ($qty, $handle) {
-                $cleanHandle = trim((string) $handle);
+        $defaultBrand = (string) (config('catalog.default_brand') ?? 'toronto-textile');
+        $items = collect($payload)
+            ->mapWithKeys(function ($qty, $id) use ($defaultBrand) {
+                $cleanId = trim((string) $id);
                 $quantity = (int) $qty;
-                if ($cleanHandle === '' || $quantity <= 0) {
+                if ($cleanId === '' || $quantity <= 0) {
                     return [];
                 }
-                return [$cleanHandle => $quantity];
+
+                $parts = explode('::', $cleanId, 2);
+                $brand = trim($parts[0] ?? '');
+                $handle = trim($parts[1] ?? '');
+                if ($handle === '') {
+                    $handle = $brand;
+                    $brand = $defaultBrand;
+                }
+                $brand = $brand !== '' ? $brand : $defaultBrand;
+                $composite = $brand . '::' . $handle;
+
+                return [$composite => ['brand' => $brand, 'handle' => $handle, 'qty' => $quantity]];
             });
 
-        if ($counts->isEmpty()) {
+        if ($items->isEmpty()) {
             return back()
                 ->withErrors(['cart_payload' => 'Your cart is empty.'])
                 ->withInput();
         }
 
         $products = Product::query()
-            ->whereIn('handle', $counts->keys()->all())
+            ->where(function ($query) use ($items) {
+                foreach ($items as $item) {
+                    $query->orWhere(function ($subQuery) use ($item) {
+                        $subQuery->where('brand_key', $item['brand'])
+                            ->where('handle', $item['handle']);
+                    });
+                }
+            })
             ->get()
-            ->keyBy('handle');
+            ->keyBy(function ($product) {
+                return $product->brand_key . '::' . $product->handle;
+            });
 
         if ($products->isEmpty()) {
             return back()
@@ -97,7 +118,7 @@ class CheckoutController extends Controller
             $paymentProofPath = $request->file('payment_proof')->store('payment-proofs', 'public');
         }
 
-        $order = DB::transaction(function () use ($data, $counts, $products, $paymentDetails, $paymentProofPath) {
+        $order = DB::transaction(function () use ($data, $items, $products, $paymentDetails, $paymentProofPath) {
             $subtotal = 0;
             $itemsCount = 0;
             $order = Order::create([
@@ -117,12 +138,13 @@ class CheckoutController extends Controller
                 'notes' => $data['notes'] ?? null,
             ]);
 
-            foreach ($counts as $handle => $qty) {
-                $product = $products->get($handle);
+            foreach ($items as $composite => $item) {
+                $product = $products->get($composite);
                 if (!$product) {
                     continue;
                 }
                 $price = $product->effectivePrice() ?? 0;
+                $qty = (int) $item['qty'];
                 $lineTotal = round($price * $qty, 2);
                 $subtotal += $lineTotal;
                 $itemsCount += $qty;
@@ -130,7 +152,7 @@ class CheckoutController extends Controller
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
-                    'product_handle' => $handle,
+                    'product_handle' => $item['handle'],
                     'title' => $product->title,
                     'price' => $price,
                     'quantity' => $qty,
@@ -152,7 +174,7 @@ class CheckoutController extends Controller
         });
 
         $notificationEmails = array_values(array_filter(
-            (array) config('khanabadosh.order_notification_emails', [])
+            (array) config('catalog.order_notification_emails', [])
         ));
 
         $mailToCustomer = Mail::to($order->email);
@@ -180,7 +202,7 @@ class CheckoutController extends Controller
     private function generateOrderNumber(): string
     {
         do {
-            $number = 'KB' . now()->format('ymd') . strtoupper(Str::random(4));
+            $number = 'TT' . now()->format('ymd') . strtoupper(Str::random(4));
         } while (Order::where('order_number', $number)->exists());
 
         return $number;

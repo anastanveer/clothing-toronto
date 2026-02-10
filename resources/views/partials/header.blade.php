@@ -1,10 +1,27 @@
 <header class="kb-header">
   <div class="container py-2">
+    @php
+      $primaryCategories = $catalogCategories['primary'] ?? [];
+      $accessoryCategories = $catalogCategories['accessories'] ?? [];
+      $enabledBrands = collect($catalogBrands ?? [])
+          ->filter(fn ($brand) => !empty($brand['enabled']))
+          ->all();
+      $currentBrandKey = request()->route('brand');
+      $useBrandMenu = $currentBrandKey && isset($enabledBrands[$currentBrandKey]);
+      $showKhanabadoshLogo = $currentBrandKey === 'khanabadosh';
+    @endphp
     <div class="d-flex align-items-center justify-content-between">
 
       <div class="d-flex align-items-center gap-3">
         <a class="kb-brand" href="{{ route('home') }}">
-          <img src="{{ asset('assets/brand/logo.avif') }}" alt="Khanabadosh logo">
+          @if ($showKhanabadoshLogo)
+            <img src="{{ asset('assets/brand/logo.avif') }}" alt="Khanabadosh logo">
+          @else
+            <span class="kb-logo-text" aria-label="Toronto Textile">
+              <span class="kb-logo-word">Toronto</span>
+              <span class="kb-logo-word kb-logo-word--accent">Textile</span>
+            </span>
+          @endif
         </a>
       </div>
 
@@ -16,92 +33,58 @@
         <ul class="kb-menu">
           <li><a class="kb-nav-link" href="{{ route('home') }}">Home</a></li>
           <li class="kb-dropdown">
-            <a class="kb-nav-link" href="{{ route('collections.show', ['slug' => 'winter25']) }}">
-              <span class="kb-tag kb-tag-trending">Trending</span>
-              <span>Winter '25</span>
+            <a class="kb-nav-link" href="{{ $useBrandMenu
+                ? route('brands.collections.show', ['brand' => $currentBrandKey, 'slug' => $primaryCategories[0]['slug'] ?? 'men-all'])
+                : route('collections.show', ['slug' => $primaryCategories[0]['slug'] ?? 'men-all']) }}">
+              <span>Shop</span>
               <i class="bi bi-chevron-down kb-nav-caret" aria-hidden="true"></i>
             </a>
-            <div class="kb-dropdown-menu" aria-label="Winter '25">
+            <div class="kb-dropdown-menu" aria-label="Shop">
               <ul class="kb-dropdown-list">
-                <li class="has-submenu">
-                  <a href="{{ route('collections.show', ['slug' => 'men-winter']) }}">
-                    <span>Men</span>
-                    <span class="arrow">&gt;</span>
-                  </a>
-                  <ul class="kb-submenu">
-                    <li><a href="{{ route('collections.show', ['slug' => 'dewan-e-khaas']) }}">Dewan-e-Khaas Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'oxford']) }}">Oxford Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'jasper']) }}">Jasper Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'venus']) }}">Venus Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'jupiter']) }}">Jupiter Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'coral']) }}">Coral Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'peridot']) }}">Peridot Collection</a></li>
-                  </ul>
-                </li>
-                <li><a class="kb-plain-link" href="{{ route('collections.show', ['slug' => 'women-all']) }}">Women</a></li>
+                @foreach ($primaryCategories as $category)
+                  <li>
+                    <a href="{{ $useBrandMenu
+                        ? route('brands.collections.show', ['brand' => $currentBrandKey, 'slug' => $category['slug']])
+                        : route('collections.show', ['slug' => $category['slug']]) }}">{{ $category['label'] }}</a>
+                  </li>
+                @endforeach
+                @if (!empty($accessoryCategories))
+                  <li class="has-submenu">
+                    <a href="{{ $useBrandMenu
+                        ? route('brands.collections.show', ['brand' => $currentBrandKey, 'slug' => 'accessories'])
+                        : route('collections.show', ['slug' => 'accessories']) }}">
+                      <span>Accessories</span>
+                      <span class="arrow">&gt;</span>
+                    </a>
+                    <ul class="kb-submenu">
+                      @foreach ($accessoryCategories as $category)
+                        <li>
+                          <a href="{{ $useBrandMenu
+                              ? route('brands.collections.show', ['brand' => $currentBrandKey, 'slug' => $category['slug']])
+                              : route('collections.show', ['slug' => $category['slug']]) }}">{{ $category['label'] }}</a>
+                        </li>
+                      @endforeach
+                    </ul>
+                  </li>
+                @endif
               </ul>
             </div>
           </li>
-          <li class="kb-dropdown">
-            <a class="kb-nav-link" href="{{ route('collections.show', ['slug' => '12-12-sale']) }}">
-              <span class="kb-tag kb-tag-sale">Sale</span>
-              <span>12.12 Sale</span>
-              <i class="bi bi-chevron-down kb-nav-caret" aria-hidden="true"></i>
-            </a>
-            <div class="kb-dropdown-menu kb-dropdown-menu--compact" aria-label="12.12 Sale">
-              <ul class="kb-dropdown-list">
-                <li><a class="kb-plain-link" href="{{ route('collections.show', ['slug' => '12-12-sale-men']) }}">Men</a></li>
-                <li><a class="kb-plain-link" href="{{ route('collections.show', ['slug' => '12-12-sale-women']) }}">Women</a></li>
-              </ul>
-            </div>
-          </li>
-          <li class="kb-dropdown">
-            <a class="kb-nav-link" href="{{ route('collections.show', ['slug' => 'men-all']) }}">
-              <span>Men Unstitched '25</span>
-              <i class="bi bi-chevron-down kb-nav-caret" aria-hidden="true"></i>
-            </a>
-            <div class="kb-dropdown-menu" aria-label="Men Unstitched '25">
-              <ul class="kb-dropdown-list">
-                <li class="has-submenu">
-                  <a href="{{ route('collections.show', ['slug' => 'men-winter']) }}">
-                    <span>Winter '25</span>
-                    <span class="arrow">&gt;</span>
-                  </a>
-                  <ul class="kb-submenu">
-                    <li><a href="{{ route('collections.show', ['slug' => 'dewan-e-khaas']) }}">Dewan-e-Khaas Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'oxford']) }}">Oxford Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'jasper']) }}">Jasper Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'venus']) }}">Venus Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'jupiter']) }}">Jupiter Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'coral']) }}">Coral Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'peridot']) }}">Peridot Collection</a></li>
-                  </ul>
-                </li>
-                <li class="has-submenu">
-                  <a href="{{ route('collections.show', ['slug' => 'all-season-men']) }}">
-                    <span>All Seasons</span>
-                    <span class="arrow">&gt;</span>
-                  </a>
-                  <ul class="kb-submenu">
-                    <li><a href="{{ route('collections.show', ['slug' => 'sang-e-marmar']) }}">Sang e marmar Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'naltar']) }}">Naltar Collection</a></li>
-                    <li><a href="{{ route('collections.show', ['slug' => 'deosai']) }}">Deosai Collection</a></li>
-                  </ul>
-                </li>
-              </ul>
-            </div>
-          </li>
-          <li class="kb-dropdown">
-            <a class="kb-nav-link" href="{{ route('collections.show', ['slug' => 'women-all']) }}">
-              <span>Women Unstitched '25</span>
-              <i class="bi bi-chevron-down kb-nav-caret" aria-hidden="true"></i>
-            </a>
-            <div class="kb-dropdown-menu kb-dropdown-menu--compact" aria-label="Women Unstitched '25">
-              <ul class="kb-dropdown-list">
-                <li><a class="kb-plain-link" href="{{ route('collections.show', ['slug' => 'women-all']) }}">Winter'25</a></li>
-              </ul>
-            </div>
-          </li>
+          @if (!empty($enabledBrands))
+            <li class="kb-dropdown">
+              <a class="kb-nav-link" href="{{ route('brands.show', ['brand' => array_key_first($enabledBrands)]) }}">
+                <span>Brands</span>
+                <i class="bi bi-chevron-down kb-nav-caret" aria-hidden="true"></i>
+              </a>
+              <div class="kb-dropdown-menu kb-dropdown-menu--compact" aria-label="Brands">
+                <ul class="kb-dropdown-list">
+                  @foreach ($enabledBrands as $brandKey => $brand)
+                    <li><a class="kb-plain-link" href="{{ route('brands.show', ['brand' => $brandKey]) }}">{{ $brand['label'] }}</a></li>
+                  @endforeach
+                </ul>
+              </div>
+            </li>
+          @endif
           <li class="kb-dropdown">
             <a class="kb-nav-link" href="{{ route('policy') }}">
               <span>Policies</span>

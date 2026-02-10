@@ -4,7 +4,7 @@
   <main class="kb-collection">
     <div class="container">
       <div class="kb-page-title">Search</div>
-      <div class="kb-page-sub">Find products, colors, or collections in Khanabadosh.</div>
+      <div class="kb-page-sub">Find products, colors, or collections in {{ $catalogStore['name'] ?? 'Toronto Textile' }}.</div>
 
       <form class="kb-search-bar" action="{{ route('search') }}" method="GET">
         <input type="search" name="q" value="{{ $query }}" placeholder="Search by name, tag, or collection" autofocus>
@@ -14,7 +14,7 @@
       @if ($query === '')
         <div class="kb-empty-state">
           <div class="kb-empty-title">Start typing to explore the catalog.</div>
-          <div class="kb-empty-sub">Try "Winter", "Men", or "Oxford".</div>
+          <div class="kb-empty-sub">Try "Outerwear", "Accessories", or "Caps".</div>
         </div>
       @else
         <div class="kb-page-sub mt-3">{{ $results->count() }} results for "{{ $query }}"</div>
@@ -27,6 +27,13 @@
               $priceValue = $product->effectivePrice();
               $price = \App\Support\CurrencyFormatter::format($priceValue);
               $badge = \App\Support\ProductBadge::resolve($product);
+              $defaultBrandKey = $catalogDefaultBrand ?? 'toronto-textile';
+              $brandKey = $product->brand_key ?: $defaultBrandKey;
+              $productId = $brandKey . '::' . $product->handle;
+              $collectionSlug = $brandKey === $defaultBrandKey ? 'men-all' : 'all';
+              $productUrl = $brandKey === $defaultBrandKey
+                ? route('products.show', ['collection' => $collectionSlug, 'slug' => $product->handle])
+                : route('brands.products.show', ['brand' => $brandKey, 'collection' => $collectionSlug, 'slug' => $product->handle]);
             @endphp
             <div class="col-6 col-md-4 col-lg-3">
               <div class="kb-product-card position-relative">
@@ -34,7 +41,7 @@
                   <span class="{{ $badge['class'] }}">{{ $badge['label'] }}</span>
                 @endif
                 <div class="kb-product-media">
-                  <a class="text-decoration-none text-dark" href="{{ route('products.show', ['collection' => 'men-all', 'slug' => $product->handle]) }}">
+                  <a class="text-decoration-none text-dark" href="{{ $productUrl }}">
                     @if ($image)
                       <img class="kb-product-img kb-product-img--main kb-ratio-tall" src="{{ $image }}" alt="{{ $product->title }}">
                     @else
@@ -45,10 +52,10 @@
                     @endif
                   </a>
                   <div class="kb-product-actions">
-                    <button class="kb-action-btn js-cart" type="button" data-product-id="{{ $product->handle }}" aria-label="Add to cart">
+                    <button class="kb-action-btn js-cart" type="button" data-product-id="{{ $productId }}" aria-label="Add to cart">
                       <i class="bi bi-bag"></i>
                     </button>
-                    <button class="kb-action-btn js-wishlist" type="button" data-product-id="{{ $product->handle }}" aria-label="Wishlist">
+                    <button class="kb-action-btn js-wishlist" type="button" data-product-id="{{ $productId }}" aria-label="Wishlist">
                       <i class="bi bi-heart"></i>
                     </button>
                     <button class="kb-action-btn js-zoom" type="button"
@@ -56,8 +63,8 @@
                       data-price="{{ $price }}"
                       data-image="{{ $image }}"
                       data-description="{{ \Illuminate\Support\Str::limit(strip_tags($product->body_html ?? ''), 220) }}"
-                      data-url="{{ route('products.show', ['collection' => 'men-all', 'slug' => $product->handle]) }}"
-                      data-product-id="{{ $product->handle }}"
+                      data-url="{{ $productUrl }}"
+                      data-product-id="{{ $productId }}"
                       aria-label="Quick view">
                       <i class="bi bi-zoom-in"></i>
                     </button>

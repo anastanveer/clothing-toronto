@@ -8,6 +8,7 @@ class Product extends Model
 {
     protected $fillable = [
         'shopify_id',
+        'brand_key',
         'title',
         'handle',
         'body_html',

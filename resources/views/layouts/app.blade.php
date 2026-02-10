@@ -3,13 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ $metaTitle ?? (isset($pageTitle) ? 'Khanabadosh - ' . $pageTitle : 'Khanabadosh') }}</title>
+  @php
+    $storeName = $catalogStore['name'] ?? 'Toronto Textile';
+    $quickCollections = array_slice($catalogCategories['primary'] ?? [], 0, 4);
+  @endphp
+  <title>{{ $metaTitle ?? (isset($pageTitle) ? $storeName . ' - ' . $pageTitle : $storeName) }}</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="{{ asset('css/khanabadosh.css') }}" rel="stylesheet">
 </head>
-<body>
+<body data-default-brand="{{ $catalogDefaultBrand ?? 'toronto-textile' }}">
   @include('partials.header')
 
   <div class="kb-mobile-tab" aria-label="Quick actions">
@@ -33,7 +37,7 @@
     <div class="kb-search-backdrop" data-search-close></div>
     <div class="kb-search-panel">
       <div class="kb-search-head">
-        <div class="kb-search-title">Search the Atelier</div>
+      <div class="kb-search-title">Search the Shop</div>
         <button class="kb-search-close" type="button" aria-label="Close search" data-search-close>&times;</button>
       </div>
       <form class="kb-search-form" action="{{ route('search') }}" method="GET">
@@ -44,20 +48,24 @@
         <div>
           <div class="kb-search-label">Popular Searches</div>
           <div class="kb-search-tags">
-            <a href="{{ route('search', ['q' => 'Winter']) }}">Winter</a>
-            <a href="{{ route('search', ['q' => 'Men']) }}">Men</a>
-            <a href="{{ route('search', ['q' => 'Women']) }}">Women</a>
-            <a href="{{ route('search', ['q' => 'Oxford']) }}">Oxford</a>
-            <a href="{{ route('search', ['q' => 'Jasper']) }}">Jasper</a>
+            <a href="{{ route('search', ['q' => 'Outerwear']) }}">Outerwear</a>
+            <a href="{{ route('search', ['q' => 'Accessories']) }}">Accessories</a>
+            <a href="{{ route('search', ['q' => 'Caps']) }}">Caps</a>
+            <a href="{{ route('search', ['q' => 'Watches']) }}">Watches</a>
+            <a href="{{ route('search', ['q' => 'Kids']) }}">Kids</a>
           </div>
         </div>
         <div>
           <div class="kb-search-label">Quick Collections</div>
           <div class="kb-search-links">
-            <a href="{{ route('collections.show', ['slug' => 'men-all']) }}">Men All</a>
-            <a href="{{ route('collections.show', ['slug' => 'women-all']) }}">Women All</a>
-            <a href="{{ route('collections.show', ['slug' => 'winter25']) }}">Winter '25</a>
-            <a href="{{ route('collections.show', ['slug' => '12-12-sale']) }}">12.12 Sale</a>
+            @forelse ($quickCollections as $collection)
+              <a href="{{ route('collections.show', ['slug' => $collection['slug']]) }}">{{ $collection['label'] }}</a>
+            @empty
+              <a href="{{ route('collections.show', ['slug' => 'men-all']) }}">Men</a>
+              <a href="{{ route('collections.show', ['slug' => 'women-all']) }}">Women</a>
+              <a href="{{ route('collections.show', ['slug' => 'accessories']) }}">Accessories</a>
+              <a href="{{ route('collections.show', ['slug' => 'outerwear']) }}">Outerwear</a>
+            @endforelse
           </div>
         </div>
       </div>
@@ -328,7 +336,7 @@
           var range = maxLimit - minLimit || 1;
           var minPercent = ((minValue - minLimit) / range) * 100;
           var maxPercent = ((maxValue - minLimit) / range) * 100;
-          var gradient = 'linear-gradient(90deg, #e5e5e5 ' + minPercent + '%, #111 ' + minPercent + '%, #c23b2a ' + maxPercent + '%, #e5e5e5 ' + maxPercent + '%)';
+          var gradient = 'linear-gradient(90deg, rgba(0,0,0,.12) ' + minPercent + '%, #111 ' + minPercent + '%, #EA2B20 ' + maxPercent + '%, rgba(0,0,0,.12) ' + maxPercent + '%)';
           minRange.style.background = gradient;
           maxRange.style.background = gradient;
         };
@@ -445,6 +453,35 @@
 
     var wishlist = JSON.parse(localStorage.getItem('kbWishlist') || '[]');
     var cartItems = JSON.parse(localStorage.getItem('kbCartItems') || '[]');
+    var defaultBrand = document.body.getAttribute('data-default-brand') || 'toronto-textile';
+    var normalizeId = function (id) {
+      if (!id || typeof id !== 'string') {
+        return '';
+      }
+      return id.indexOf('::') === -1 ? defaultBrand + '::' + id : id;
+    };
+    var wishlistChanged = false;
+    wishlist = wishlist.map(function (id) {
+      var normalized = normalizeId(id);
+      if (normalized !== id) {
+        wishlistChanged = true;
+      }
+      return normalized;
+    }).filter(Boolean);
+    var cartChanged = false;
+    cartItems = cartItems.map(function (id) {
+      var normalized = normalizeId(id);
+      if (normalized !== id) {
+        cartChanged = true;
+      }
+      return normalized;
+    }).filter(Boolean);
+    if (wishlistChanged) {
+      localStorage.setItem('kbWishlist', JSON.stringify(wishlist));
+    }
+    if (cartChanged) {
+      localStorage.setItem('kbCartItems', JSON.stringify(cartItems));
+    }
     var cartCount = cartItems.length;
     var clearCart = document.querySelector('[data-clear-cart]');
     if (clearCart) {
@@ -605,12 +642,12 @@
 
     updateCounts();
 
-    var fetchProducts = function (handles, callback) {
-      if (!handles || !handles.length) {
+    var fetchProducts = function (ids, callback) {
+      if (!ids || !ids.length) {
         callback([], {});
         return;
       }
-      var url = '/api/products?handles=' + encodeURIComponent(handles.join(','));
+      var url = '/api/products?ids=' + encodeURIComponent(ids.join(','));
       fetch(url)
         .then(function (response) { return response.json(); })
         .then(function (payload) { callback(payload.items || [], payload || {}); })
@@ -649,8 +686,8 @@
                       (item.image ? '<img class=\"kb-product-img kb-product-img--main kb-ratio-tall\" src=\"' + item.image + '\" alt=\"' + item.title + '\">' : '<div class=\"kb-ph kb-ratio-tall no-label\"></div>') +
                     '</a>' +
                     '<div class=\"kb-product-actions\">' +
-                      '<button class=\"kb-action-btn js-cart\" type=\"button\" data-product-id=\"' + item.handle + '\" aria-label=\"Add to cart\"><i class=\"bi bi-bag\"></i></button>' +
-                      '<button class=\"kb-action-btn kb-remove\" type=\"button\" data-remove-wishlist=\"' + item.handle + '\" aria-label=\"Remove\"><i class=\"bi bi-x\"></i></button>' +
+                      '<button class=\"kb-action-btn js-cart\" type=\"button\" data-product-id=\"' + item.id + '\" aria-label=\"Add to cart\"><i class=\"bi bi-bag\"></i></button>' +
+                      '<button class=\"kb-action-btn kb-remove\" type=\"button\" data-remove-wishlist=\"' + item.id + '\" aria-label=\"Remove\"><i class=\"bi bi-x\"></i></button>' +
                     '</div>' +
                   '</div>' +
                   '<div class=\"name\">' + item.title + '</div>' +
@@ -702,7 +739,7 @@
           acc[id] = (acc[id] || 0) + 1;
           return acc;
         }, {});
-        var items = cartData.items.filter(function (item) { return counts[item.handle]; });
+        var items = cartData.items.filter(function (item) { return counts[item.id]; });
         var symbol = cartData.payload.symbol || '';
         var total = 0;
 
@@ -724,7 +761,7 @@
         }
 
         cartList.innerHTML = items.map(function (item) {
-          var qty = counts[item.handle] || 1;
+          var qty = counts[item.id] || 1;
           var lineTotal = (item.price_value || 0) * qty;
           total += lineTotal;
           return '' +
@@ -736,16 +773,16 @@
                 '<div class=\"kb-cart-qty\">' +
                   '<span>Qty</span>' +
                   '<div class=\"kb-cart-qty-control\">' +
-                    '<button type=\"button\" data-cart-dec=\"' + item.handle + '\">-</button>' +
-                    '<span>' + qty + '</span>' +
-                    '<button type=\"button\" data-cart-inc=\"' + item.handle + '\">+</button>' +
-                  '</div>' +
+                  '<button type=\"button\" data-cart-dec=\"' + item.id + '\">-</button>' +
+                  '<span>' + qty + '</span>' +
+                  '<button type=\"button\" data-cart-inc=\"' + item.id + '\">+</button>' +
                 '</div>' +
               '</div>' +
-              '<div class=\"kb-cart-actions\">' +
-                '<button class=\"kb-btn-outline kb-remove\" type=\"button\" data-remove-cart=\"' + item.handle + '\">Remove</button>' +
-              '</div>' +
-            '</div>';
+            '</div>' +
+            '<div class=\"kb-cart-actions\">' +
+              '<button class=\"kb-btn-outline kb-remove\" type=\"button\" data-remove-cart=\"' + item.id + '\">Remove</button>' +
+            '</div>' +
+          '</div>';
         }).join('');
 
         var formattedTotal = symbol
@@ -803,8 +840,8 @@
           acc[id] = (acc[id] || 0) + 1;
           return acc;
         }, {});
-        var handles = Object.keys(counts);
-        fetchProducts(handles, function (items, payload) {
+        var ids = Object.keys(counts);
+        fetchProducts(ids, function (items, payload) {
           cartData.items = items || [];
           cartData.payload = payload || {};
           renderCart();
@@ -852,12 +889,12 @@
         if (cartPayloadInput) {
           cartPayloadInput.value = JSON.stringify(counts);
         }
-        var handles = Object.keys(counts);
-        fetchProducts(handles, function (items, payload) {
+        var ids = Object.keys(counts);
+        fetchProducts(ids, function (items, payload) {
           var symbol = payload.symbol || '';
           var total = 0;
           checkoutList.innerHTML = items.map(function (item) {
-            var qty = counts[item.handle] || 1;
+            var qty = counts[item.id] || 1;
             var lineTotal = (item.price_value || 0) * qty;
             total += lineTotal;
             return '' +

@@ -8,6 +8,7 @@ class Collection extends Model
 {
     protected $fillable = [
         'shopify_id',
+        'brand_key',
         'title',
         'handle',
         'source_updated_at',

@@ -48,7 +48,7 @@ class AdminOrderController extends Controller
 
         if ($previousStatus !== $data['status']) {
             $notificationEmails = array_values(array_filter(
-                (array) config('khanabadosh.order_notification_emails', [])
+                (array) config('catalog.order_notification_emails', [])
             ));
 
             $mailToCustomer = Mail::to($order->email);

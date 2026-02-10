@@ -51,6 +51,17 @@
         @method('PUT')
         <div class="kb-form-grid">
           <div>
+            <label>Brand</label>
+            <select name="brand_key" data-brand-select required>
+              @foreach ($brands as $brand)
+                <option value="{{ $brand['key'] }}" {{ ($selectedBrand ?? '') === $brand['key'] ? 'selected' : '' }}>
+                  {{ $brand['label'] }}
+                </option>
+              @endforeach
+            </select>
+            <div class="kb-admin-note">Changing brand updates catalog routing and URLs.</div>
+          </div>
+          <div>
             <label>Title</label>
             <input type="text" name="title" value="{{ old('title', $product->title) }}" required>
           </div>
@@ -98,6 +109,32 @@
             <label>Tags</label>
             <input type="text" name="tags" value="{{ old('tags', $product->tags) }}">
           </div>
+          @php
+            $accessoryCategories = $catalogCategories['accessories'] ?? [];
+            $selectedAccessoryTags = collect(old('accessory_tags', []));
+            $tagList = collect(explode(',', (string) old('tags', $product->tags ?? '')))
+              ->map(fn ($tag) => strtolower(trim($tag)))
+              ->filter();
+          @endphp
+          @if (!empty($accessoryCategories))
+            <div class="kb-form-span">
+              <label>Accessory Categories</label>
+              <div class="kb-chip-grid">
+                @foreach ($accessoryCategories as $category)
+                  @php
+                    $label = $category['label'];
+                    $isChecked = $selectedAccessoryTags->contains($label)
+                      || $tagList->contains(strtolower($label));
+                  @endphp
+                  <label class="kb-chip">
+                    <input type="checkbox" name="accessory_tags[]" value="{{ $label }}" {{ $isChecked ? 'checked' : '' }}>
+                    <span>{{ $label }}</span>
+                  </label>
+                @endforeach
+              </div>
+              <div class="kb-admin-note">Select accessories to auto-tag this product under Accessories + category.</div>
+            </div>
+          @endif
           <div>
             <label>Product Type</label>
             <input type="text" name="product_type" value="{{ old('product_type', $product->product_type) }}">
@@ -112,9 +149,9 @@
           </div>
           <div>
             <label>Collections</label>
-            <select name="collections[]" multiple>
+            <select name="collections[]" multiple data-collection-select>
               @foreach ($collections as $collection)
-                <option value="{{ $collection->id }}" {{ collect(old('collections', $product->collections->pluck('id')->all()))->contains($collection->id) ? 'selected' : '' }}>
+                <option value="{{ $collection->id }}" data-brand="{{ $collection->brand_key }}" {{ collect(old('collections', $product->collections->pluck('id')->all()))->contains($collection->id) ? 'selected' : '' }}>
                   {{ $collection->title }}
                 </option>
               @endforeach
@@ -231,3 +268,42 @@
     </div>
   </main>
 @endsection
+
+@push('scripts')
+  <script>
+    (function () {
+      var brandSelect = document.querySelector('[data-brand-select]');
+      var collectionSelect = document.querySelector('[data-collection-select]');
+      if (!brandSelect || !collectionSelect) {
+        return;
+      }
+
+      var updateCollections = function () {
+        var brand = brandSelect.value;
+        var options = Array.from(collectionSelect.options);
+        var visibleCount = 0;
+
+        options.forEach(function (option) {
+          var optionBrand = option.getAttribute('data-brand') || '';
+          var isMatch = optionBrand === '' || optionBrand === brand;
+          option.hidden = !isMatch;
+          if (!isMatch) {
+            option.selected = false;
+          }
+          if (isMatch) {
+            visibleCount += 1;
+          }
+        });
+
+        if (visibleCount === 0) {
+          options.forEach(function (option) {
+            option.hidden = false;
+          });
+        }
+      };
+
+      brandSelect.addEventListener('change', updateCollections);
+      updateCollections();
+    })();
+  </script>
+@endpush

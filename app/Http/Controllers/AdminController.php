@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\KhanabadoshSyncService;
+use App\Services\CatalogSyncService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -88,8 +88,9 @@ class AdminController extends Controller
             }
         } catch (\Throwable $exception) {
         }
-        $bankName = \App\Models\Setting::getValue('bank_name', 'Khanabadosh Bank');
-        $bankTitle = \App\Models\Setting::getValue('bank_account_title', 'Khanabadosh Fashion');
+        $storeName = (string) (config('catalog.store.name') ?? 'Toronto Textile');
+        $bankName = \App\Models\Setting::getValue('bank_name', $storeName . ' Bank');
+        $bankTitle = \App\Models\Setting::getValue('bank_account_title', $storeName);
         $bankAccount = \App\Models\Setting::getValue('bank_account_number', '0001-2233-4455');
         $bankIban = \App\Models\Setting::getValue('bank_iban', 'PK00KB0000000000000001');
         $bankNote = \App\Models\Setting::getValue('bank_note', 'Send payment to the bank account and upload the transfer screenshot.');
@@ -128,9 +129,10 @@ class AdminController extends Controller
         ]);
     }
 
-    public function sync(KhanabadoshSyncService $service): RedirectResponse
+    public function sync(Request $request, CatalogSyncService $service): RedirectResponse
     {
-        $summary = $service->sync();
+        $brand = $request->input('brand');
+        $summary = $service->sync($brand ?: null);
 
         return redirect()
             ->route('admin.index')

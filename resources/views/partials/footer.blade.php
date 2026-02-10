@@ -2,15 +2,20 @@
   <div class="container">
     <div class="row g-4">
 
+      @php
+        $storeName = $catalogStore['name'] ?? 'Toronto Textile';
+        $storePhone = $catalogStore['phone'] ?? '+1 437 551 9575';
+        $storeEmail = $catalogStore['support_email'] ?? 'support@torontotextile.ca';
+      @endphp
       <div class="col-12 col-md-3">
-        <h6>KHANABADOSH</h6>
+        <h6>{{ strtoupper($storeName) }}</h6>
         <div class="small mb-2">
-          Innisfil, Ontario<br>
-          Canada
+          {{ $catalogStore['city'] ?? 'Toronto, Ontario' }}<br>
+          {{ $catalogStore['country'] ?? 'Canada' }}
         </div>
         <div class="small">
-          <strong>Phone:</strong> <a href="tel:+14375519575">+14375519575</a><br>
-          <strong>Email:</strong> info@khanabadoshfashion.ca
+          <strong>Phone:</strong> <a href="tel:{{ preg_replace('/\s+/', '', $storePhone) }}">{{ $storePhone }}</a><br>
+          <strong>Email:</strong> <a href="mailto:{{ $storeEmail }}">{{ $storeEmail }}</a>
         </div>
         <div class="mt-3 d-flex gap-2">
           <a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
@@ -31,7 +36,9 @@
       <div class="col-6 col-md-2">
         <h6>Quick Shop</h6>
         <a href="{{ route('home') }}">Home</a><br>
-        <a href="{{ route('collections.show', ['slug' => 'men-all']) }}">Catalog</a><br>
+        <a href="{{ route('collections.show', ['slug' => 'men-all']) }}">Shop Men</a><br>
+        <a href="{{ route('collections.show', ['slug' => 'women-all']) }}">Shop Women</a><br>
+        <a href="{{ route('collections.show', ['slug' => 'accessories']) }}">Accessories</a><br>
         <a href="#">Contact</a>
       </div>
 
@@ -54,7 +61,7 @@
     <hr class="my-4" style="border-color: rgba(255,255,255,.12)">
 
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 small">
-      <div>© 2026 Khanabadosh. All Rights Reserved.</div>
+      <div>© 2026 {{ $storeName }}. All Rights Reserved.</div>
       <div class="text-secondary">
         Designed by <a href="https://torontobytes.com/" target="_blank" rel="noopener">TorontoBytes</a>
       </div>

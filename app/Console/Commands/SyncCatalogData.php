@@ -2,19 +2,20 @@
 
 namespace App\Console\Commands;
 
-use App\Services\KhanabadoshSyncService;
+use App\Services\CatalogSyncService;
 use Illuminate\Console\Command;
 
-class SyncKhanabadoshData extends Command
+class SyncCatalogData extends Command
 {
-    protected $signature = 'khanabadosh:sync';
-    protected $description = 'Sync products and collections from khanabadoshonline.com JSON feeds';
+    protected $signature = 'catalog:sync {--brand=}';
+    protected $description = 'Sync products and collections from catalog brand JSON feeds';
 
-    public function handle(KhanabadoshSyncService $service): int
+    public function handle(CatalogSyncService $service): int
     {
-        $this->info('Starting sync...');
+        $this->info('Starting catalog sync...');
 
-        $summary = $service->sync();
+        $brand = $this->option('brand');
+        $summary = $service->sync($brand ? (string) $brand : null);
 
         $this->table(
             ['Collections', 'Products', 'Variants', 'Images', 'Collection Links'],
@@ -27,7 +28,7 @@ class SyncKhanabadoshData extends Command
             ]]
         );
 
-        $this->info('Sync completed.');
+        $this->info('Catalog sync completed.');
 
         return self::SUCCESS;
     }

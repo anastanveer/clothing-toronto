@@ -9,9 +9,9 @@
     body {
       margin: 0;
       padding: 0;
-      background: #f5f1ea;
+      background: #fff;
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      color: #2d2822;
+      color: #111;
     }
     .preheader {
       display: none !important;
@@ -25,27 +25,40 @@
     }
     .wrapper {
       width: 100%;
-      background: #f5f1ea;
+      background: #fff;
       padding: 24px 0 36px;
     }
     .container {
       width: 100%;
       max-width: 640px;
       margin: 0 auto;
-      background: #ffffff;
+      background: #fff;
       border-radius: 18px;
       overflow: hidden;
-      border: 1px solid #eadfce;
+      border: 1px solid rgba(0,0,0,.08);
     }
     .header {
       padding: 28px 36px 16px;
-      background: #f0e7d8;
+      background: rgba(0,0,0,.04);
       text-align: center;
     }
     .logo {
       width: 160px;
       height: auto;
       display: inline-block;
+    }
+    .logo-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: none;
+      font-size: 18px;
+      color: #111;
+    }
+    .logo-text .accent {
+      color: #EA2B20;
     }
     .content {
       padding: 24px 36px 12px;
@@ -59,10 +72,10 @@
     p {
       margin: 0 0 12px;
       line-height: 1.6;
-      color: #3c352b;
+      color: rgba(0,0,0,.8);
     }
     .muted {
-      color: #7a6f61;
+      color: rgba(0,0,0,.6);
       font-size: 14px;
     }
     .section-title {
@@ -70,7 +83,7 @@
       font-size: 16px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: #5a5144;
+      color: rgba(0,0,0,.7);
     }
     .summary {
       width: 100%;
@@ -84,11 +97,11 @@
     .summary .label {
       width: 38%;
       font-weight: 600;
-      color: #4a4338;
+      color: rgba(0,0,0,.75);
     }
     .summary .value {
       text-align: right;
-      color: #2f2922;
+      color: #111;
     }
     .items {
       width: 100%;
@@ -100,15 +113,15 @@
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      color: #7a6f61;
+      color: rgba(0,0,0,.6);
       padding-bottom: 8px;
-      border-bottom: 1px solid #efe3d4;
+      border-bottom: 1px solid rgba(0,0,0,.12);
     }
     .items td {
       padding: 10px 0;
-      border-bottom: 1px solid #f3eadf;
+      border-bottom: 1px solid rgba(0,0,0,.08);
       font-size: 14px;
-      color: #2f2922;
+      color: #111;
     }
     .items td.amount,
     .items th.amount {
@@ -121,8 +134,8 @@
       border-bottom: none;
     }
     .note {
-      background: #f9f3ea;
-      border: 1px solid #eadfce;
+      background: rgba(0,0,0,.04);
+      border: 1px solid rgba(0,0,0,.12);
       border-radius: 12px;
       padding: 14px 16px;
       margin: 18px 0;
@@ -132,8 +145,8 @@
       display: inline-block;
       margin: 8px 0 16px;
       padding: 10px 18px;
-      background: #2d2822;
-      color: #ffffff !important;
+      background: #EA2B20;
+      color: #fff !important;
       text-decoration: none;
       border-radius: 999px;
       font-size: 13px;
@@ -143,11 +156,11 @@
       padding: 18px 36px 28px;
       text-align: center;
       font-size: 12px;
-      color: #8a7d6c;
+      color: rgba(0,0,0,.6);
       line-height: 1.6;
     }
     .footer a {
-      color: #6d5f4f;
+      color: #111;
       text-decoration: none;
     }
     @media (max-width: 640px) {
@@ -181,7 +194,10 @@
           <tr>
             <td class="header">
               <a href="{{ config('app.url') }}" aria-label="{{ config('app.name') }}">
-                <img src="{{ asset('assets/brand/logo.avif') }}" alt="{{ config('app.name') }}" class="logo">
+                <span class="logo-text">
+                  <span>Toronto</span>
+                  <span class="accent">Textile</span>
+                </span>
               </a>
             </td>
           </tr>
@@ -196,7 +212,7 @@
           </tr>
           <tr>
             <td class="footer">
-              <div>Need help? Reach us at <a href="mailto:info@khanabadoshfashion.ca">info@khanabadoshfashion.ca</a>.</div>
+              <div>Need help? Reach us at <a href="mailto:{{ $catalogStore['support_email'] ?? 'support@torontotextile.ca' }}">{{ $catalogStore['support_email'] ?? 'support@torontotextile.ca' }}</a>.</div>
               <div>{{ config('app.name') }} · {{ config('app.url') }}</div>
             </td>
           </tr>

@@ -6,7 +6,7 @@
       <div class="kb-admin-login">
         <div class="kb-admin-login-card">
           <div class="kb-admin-login-hero">
-            <div class="kb-admin-login-badge">Khanabadosh Console</div>
+            <div class="kb-admin-login-badge">{{ $catalogStore['name'] ?? 'Toronto Textile' }} Console</div>
             <div class="kb-page-title">Admin Login</div>
             <div class="kb-page-sub">Manage products, inventory, pricing, and campaigns.</div>
           </div>

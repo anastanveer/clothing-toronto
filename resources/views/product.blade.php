@@ -8,23 +8,55 @@
     $priceValue = $isModel ? $product->effectivePrice() : $product['price'];
     $price = $priceValue ? \App\Support\CurrencyFormatter::format($priceValue) : null;
     $productHandle = $isModel ? $product->handle : ($productSlug ?? $product['slug'] ?? '');
+    $resolvedBrandKey = $brandKey ?? ($catalogDefaultBrand ?? 'toronto-textile');
+    $defaultBrandKey = $catalogDefaultBrand ?? $resolvedBrandKey;
+    $useBrandRoutes = $resolvedBrandKey !== $defaultBrandKey;
+    $productId = $resolvedBrandKey . '::' . $productHandle;
     $compareValue = null;
     if ($isModel && $product->hasActiveDiscount() && $product->price) {
         $compareValue = $product->price;
     } elseif ($isModel && $product->compare_at_price && $product->price && $product->compare_at_price > $product->price) {
         $compareValue = $product->compare_at_price;
     }
+    if (!$isModel) {
+        $compareRaw = $product['compare_at_price'] ?? $product['compareAtPrice'] ?? null;
+        if (is_numeric($compareRaw) && is_numeric($priceValue) && (float) $compareRaw > (float) $priceValue) {
+            $compareValue = (float) $compareRaw;
+        }
+    }
     $comparePrice = $compareValue ? \App\Support\CurrencyFormatter::format($compareValue) : null;
-    $gallery = $isModel ? $product->images->sortBy('position') : collect($product['gallery']);
-    $description = $isModel ? $product->body_html : e($product['description']);
-    $details = $isModel ? ($product->product_type ?: 'Unstitched • Winter Collection') : $product['details'];
+    if ($isModel) {
+        $gallery = $product->images->sortBy('position');
+    } else {
+        $gallery = collect($product['gallery'] ?? [])
+            ->map(function ($item) {
+                if (is_string($item)) {
+                    return (object) ['src' => $item];
+                }
+                if (is_array($item)) {
+                    return (object) $item;
+                }
+                return $item;
+            })
+            ->filter(fn ($item) => !empty($item->src))
+            ->values();
+
+        if ($gallery->isEmpty() && !empty($product['image'])) {
+            $gallery = collect([(object) ['src' => $product['image']]]);
+            if (!empty($product['alt_image'])) {
+                $gallery->push((object) ['src' => $product['alt_image']]);
+            }
+        }
+    }
+    $description = $isModel ? $product->body_html : ($product['description'] ?? ($product['body_html'] ?? ''));
+    $details = $isModel ? ($product->product_type ?: 'Unstitched • Winter Collection') : ($product['details'] ?? 'Unstitched • Winter Collection');
   @endphp
 
   <main class="kb-product-detail">
     <div class="container">
       <div class="kb-breadcrumb">
         <a href="{{ route('home') }}">Home</a> /
-        <a href="{{ route('collections.show', ['slug' => $collectionSlug]) }}">{{ $collectionTitle }}</a> /
+        <a href="{{ $useBrandRoutes ? route('brands.collections.show', ['brand' => $resolvedBrandKey, 'slug' => $collectionSlug]) : route('collections.show', ['slug' => $collectionSlug]) }}">{{ $collectionTitle }}</a> /
         <span>{{ $name }}</span>
       </div>
 
@@ -94,8 +126,8 @@
           </div>
 
           <div class="kb-action">
-            <button class="kb-btn-primary js-cart" type="button" data-product-id="{{ $productHandle }}" data-qty-target="kb-product-qty">Add to Cart</button>
-            <button class="kb-btn-outline js-buy-now" type="button" data-product-id="{{ $productHandle }}" data-qty-target="kb-product-qty" data-cart-url="{{ route('cart') }}">Buy It Now</button>
+            <button class="kb-btn-primary js-cart" type="button" data-product-id="{{ $productId }}" data-qty-target="kb-product-qty">Add to Cart</button>
+            <button class="kb-btn-outline js-buy-now" type="button" data-product-id="{{ $productId }}" data-qty-target="kb-product-qty" data-cart-url="{{ route('cart') }}">Buy It Now</button>
           </div>
 
           <div class="kb-info-card">

@@ -10,6 +10,9 @@ use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/brands/{brand}', [PageController::class, 'brand'])->name('brands.show');
+Route::get('/brands/{brand}/collections/{slug}', [PageController::class, 'brandCollection'])->name('brands.collections.show');
+Route::get('/brands/{brand}/collections/{collection}/products/{slug}', [PageController::class, 'brandProduct'])->name('brands.products.show');
 Route::get('/collections/{slug}', [PageController::class, 'collection'])->name('collections.show');
 Route::get('/collections/{collection}/products/{slug}', [PageController::class, 'product'])->name('products.show');
 Route::get('/search', [PageController::class, 'search'])->name('search');

@@ -11,9 +11,20 @@
         <div class="kb-admin-actions">
           <a class="kb-btn-outline" href="{{ route('admin.orders.index') }}">Orders</a>
           <a class="kb-btn-outline" href="{{ route('admin.products.index') }}">Manage Products</a>
+          @php
+            $syncBrands = collect($catalogBrands ?? [])->filter(fn ($brand) => !empty($brand['enabled']));
+          @endphp
           <form method="POST" action="{{ route('admin.sync') }}">
             @csrf
-            <button class="kb-btn-primary" type="submit">Sync Data</button>
+            <div class="kb-sync-row">
+              <select name="brand" aria-label="Select brand to sync">
+                <option value="">All Brands</option>
+                @foreach ($syncBrands as $key => $brand)
+                  <option value="{{ $key }}">{{ $brand['label'] }}</option>
+                @endforeach
+              </select>
+              <button class="kb-btn-primary" type="submit">Sync Data</button>
+            </div>
           </form>
           <form method="POST" action="{{ route('admin.logout') }}">
             @csrf
@@ -369,8 +380,8 @@
           datasets: [{
             label: 'Units',
             data: stockValues,
-            borderColor: '#c23b2a',
-            backgroundColor: 'rgba(194, 59, 42, 0.15)',
+            borderColor: '#EA2B20',
+            backgroundColor: 'rgba(234, 43, 32, 0.15)',
             borderWidth: 2,
             pointRadius: 3,
             tension: 0.3,
@@ -398,12 +409,12 @@
           datasets: [{
             data: orderStatusValues,
             backgroundColor: [
-              'rgba(245,158,11,0.8)',
-              'rgba(16,185,129,0.8)',
-              'rgba(59,130,246,0.8)',
-              'rgba(34,197,94,0.8)',
-              'rgba(239,68,68,0.8)',
-              'rgba(20,184,166,0.8)'
+              'rgba(234,43,32,0.85)',
+              'rgba(0,0,0,0.85)',
+              'rgba(234,43,32,0.65)',
+              'rgba(0,0,0,0.65)',
+              'rgba(234,43,32,0.45)',
+              'rgba(0,0,0,0.45)'
             ],
             borderWidth: 0,
           }]

@@ -24,14 +24,34 @@
 
       <form class="kb-admin-search" method="GET" action="{{ route('admin.products.index') }}">
         <input type="text" name="q" placeholder="Search by title, handle, or tags" value="{{ $search }}">
+        <select name="brand">
+          <option value="">All Brands</option>
+          @foreach ($brands as $brand)
+            <option value="{{ $brand['key'] }}" {{ ($brandFilter ?? '') === $brand['key'] ? 'selected' : '' }}>
+              {{ $brand['label'] }}
+            </option>
+          @endforeach
+        </select>
         <button class="kb-btn-outline" type="submit">Search</button>
       </form>
+
+      @if (!empty($brands) && count($brands))
+        <div class="kb-admin-brand-row">
+          <a class="kb-admin-brand-chip {{ empty($brandFilter) ? 'is-active' : '' }}" href="{{ route('admin.products.index') }}">All</a>
+          @foreach ($brands as $brand)
+            <a class="kb-admin-brand-chip {{ ($brandFilter ?? '') === $brand['key'] ? 'is-active' : '' }}" href="{{ route('admin.products.index', ['brand' => $brand['key']]) }}">
+              {{ $brand['label'] }}
+            </a>
+          @endforeach
+        </div>
+      @endif
 
       <div class="kb-admin-table">
         <table>
           <thead>
             <tr>
               <th>Product</th>
+              <th>Brand</th>
               <th>Price</th>
               <th>Stock</th>
               <th>Discount</th>
@@ -63,6 +83,11 @@
                       <div class="text-muted" style="font-size:.75rem;">{{ $product->handle }}</div>
                     </div>
                   </div>
+                </td>
+                <td>
+                  <span class="kb-admin-brand-pill">
+                    {{ $catalogBrands[$product->brand_key]['label'] ?? \Illuminate\Support\Str::of($product->brand_key)->replace('-', ' ')->title()->value() }}
+                  </span>
                 </td>
                 <td>
                   <div>{{ $price }}</div>
