@@ -225,7 +225,7 @@
               <span>Total</span>
               <span data-checkout-total>--</span>
             </div>
-            <div class="kb-summary-note">Secure checkout powered by {{ $catalogStore['name'] ?? 'Toronto Textile' }}.</div>
+            <div class="kb-summary-note">Secure checkout powered by {{ $catalogStore['name'] ?? 'Textile Bytes' }}.</div>
             <div class="kb-summary-foot">
               <div><i class="bi bi-shield-lock"></i> SSL protected payments</div>
               <div><i class="bi bi-arrow-repeat"></i> 7-day exchange support</div>

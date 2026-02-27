@@ -4,7 +4,7 @@
   <main class="kb-collection">
     <div class="container">
       <div class="kb-page-title">Search</div>
-      <div class="kb-page-sub">Find products, colors, or collections in {{ $catalogStore['name'] ?? 'Toronto Textile' }}.</div>
+      <div class="kb-page-sub">Find products, colors, or collections in {{ $catalogStore['name'] ?? 'Textile Bytes' }}.</div>
 
       <form class="kb-search-bar" action="{{ route('search') }}" method="GET">
         <input type="search" name="q" value="{{ $query }}" placeholder="Search by name, tag, or collection" autofocus>

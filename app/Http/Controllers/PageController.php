@@ -495,7 +495,7 @@ class PageController extends Controller
 
     public function checkout()
     {
-        $storeName = (string) (config('catalog.store.name') ?? 'Toronto Textile');
+        $storeName = (string) (config('catalog.store.name') ?? 'Textile Bytes');
 
         return view('checkout', [
             'pageTitle' => 'Checkout',
@@ -657,7 +657,7 @@ class PageController extends Controller
     public function policy(Request $request)
     {
         $pageTitle = $request->query('title', 'Policies');
-        $storeName = (string) (config('catalog.store.name') ?? 'Toronto Textile');
+        $storeName = (string) (config('catalog.store.name') ?? 'Textile Bytes');
         $storeLabel = $storeName . ' Canada';
 
         $policyMap = [

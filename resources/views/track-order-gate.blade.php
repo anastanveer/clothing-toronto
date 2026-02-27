@@ -17,7 +17,7 @@
       <div class="kb-empty-state">
         <div class="kb-empty-title">Need help finding your order?</div>
         <div class="kb-empty-sub">{{ $helpBody ?? 'Contact support and we will resend your tracking link.' }}</div>
-        <a class="kb-btn-outline mt-3 text-decoration-none" href="mailto:{{ $catalogStore['support_email'] ?? 'support@torontotextile.ca' }}">Email Support</a>
+        <a class="kb-btn-outline mt-3 text-decoration-none" href="mailto:{{ $catalogStore['support_email'] ?? 'support@textilebytes.ca' }}">Email Support</a>
       </div>
     </div>
   </main>

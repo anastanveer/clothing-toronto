@@ -2,22 +2,22 @@
 
 return [
     'store' => [
-        'name' => env('STORE_NAME', 'Toronto Textile'),
+        'name' => env('STORE_NAME', 'Textile Bytes'),
         'tagline' => env('STORE_TAGLINE', 'Canadian essentials for every season.'),
-        'support_email' => env('STORE_SUPPORT_EMAIL', 'support@torontotextile.ca'),
+        'support_email' => env('STORE_SUPPORT_EMAIL', 'support@textilebytes.ca'),
         'phone' => env('STORE_PHONE', '+1 437 551 9575'),
         'city' => env('STORE_CITY', 'Toronto, Ontario'),
         'country' => env('STORE_COUNTRY', 'Canada'),
     ],
     'order_notification_emails' => array_values(array_filter(array_map(
         'trim',
-        explode(',', (string) env('ORDER_NOTIFICATION_EMAILS', 'support@torontotextile.ca'))
+        explode(',', (string) env('ORDER_NOTIFICATION_EMAILS', 'support@textilebytes.ca'))
     ))),
     'local_json_path' => env('CATALOG_LOCAL_JSON_PATH', base_path()),
     'default_brand' => env('CATALOG_DEFAULT_BRAND', 'khanabadosh'),
     'brands' => [
         'toronto-textile' => [
-            'label' => 'Toronto Textile',
+            'label' => 'Textile Bytes',
             'source_url' => env('TORONTO_TEXTILE_SOURCE_URL', ''),
             'enabled' => false,
         ],

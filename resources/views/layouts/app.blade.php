@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   @php
-    $storeName = $catalogStore['name'] ?? 'Toronto Textile';
+    $storeName = $catalogStore['name'] ?? 'Textile Bytes';
     $quickCollections = array_slice($catalogCategories['primary'] ?? [], 0, 4);
   @endphp
   <title>{{ $metaTitle ?? (isset($pageTitle) ? $storeName . ' - ' . $pageTitle : $storeName) }}</title>

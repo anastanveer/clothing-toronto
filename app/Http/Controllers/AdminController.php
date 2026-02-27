@@ -88,7 +88,7 @@ class AdminController extends Controller
             }
         } catch (\Throwable $exception) {
         }
-        $storeName = (string) (config('catalog.store.name') ?? 'Toronto Textile');
+        $storeName = (string) (config('catalog.store.name') ?? 'Textile Bytes');
         $bankName = \App\Models\Setting::getValue('bank_name', $storeName . ' Bank');
         $bankTitle = \App\Models\Setting::getValue('bank_account_title', $storeName);
         $bankAccount = \App\Models\Setting::getValue('bank_account_number', '0001-2233-4455');

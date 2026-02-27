@@ -3,9 +3,9 @@
     <div class="row g-4">
 
       @php
-        $storeName = $catalogStore['name'] ?? 'Toronto Textile';
+        $storeName = $catalogStore['name'] ?? 'Textile Bytes';
         $storePhone = $catalogStore['phone'] ?? '+1 437 551 9575';
-        $storeEmail = $catalogStore['support_email'] ?? 'support@torontotextile.ca';
+        $storeEmail = $catalogStore['support_email'] ?? 'support@textilebytes.ca';
       @endphp
       <div class="col-12 col-md-3">
         <h6>{{ strtoupper($storeName) }}</h6>

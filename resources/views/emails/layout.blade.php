@@ -195,8 +195,8 @@
             <td class="header">
               <a href="{{ config('app.url') }}" aria-label="{{ config('app.name') }}">
                 <span class="logo-text">
-                  <span>Toronto</span>
-                  <span class="accent">Textile</span>
+                  <span>Textile</span>
+                  <span class="accent">Bytes</span>
                 </span>
               </a>
             </td>
@@ -212,7 +212,7 @@
           </tr>
           <tr>
             <td class="footer">
-              <div>Need help? Reach us at <a href="mailto:{{ $catalogStore['support_email'] ?? 'support@torontotextile.ca' }}">{{ $catalogStore['support_email'] ?? 'support@torontotextile.ca' }}</a>.</div>
+              <div>Need help? Reach us at <a href="mailto:{{ $catalogStore['support_email'] ?? 'support@textilebytes.ca' }}">{{ $catalogStore['support_email'] ?? 'support@textilebytes.ca' }}</a>.</div>
               <div>{{ config('app.name') }} · {{ config('app.url') }}</div>
             </td>
           </tr>

@@ -4,7 +4,7 @@
   <main class="kb-collection">
     <div class="container">
       <div class="kb-page-title">{{ $pageTitle }}</div>
-      <div class="kb-page-sub">{{ $catalogStore['name'] ?? 'Toronto Textile' }} Canada</div>
+      <div class="kb-page-sub">{{ $catalogStore['name'] ?? 'Textile Bytes' }} Canada</div>
       <div class="kb-policy-body">
         <p>{{ $intro }}</p>
 

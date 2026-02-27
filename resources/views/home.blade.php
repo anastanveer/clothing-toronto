@@ -18,7 +18,7 @@
           <div class="kb-hero-slide kb-ratio-hero">
             <picture>
               <source media="(max-width: 576px)" srcset="{{ asset('assets/hero/mobile/12.webp') }}">
-              <img class="kb-hero-image" src="{{ asset('assets/hero/1.webp') }}" alt="{{ $catalogStore['name'] ?? 'Toronto Textile' }} hero 1">
+              <img class="kb-hero-image" src="{{ asset('assets/hero/1.webp') }}" alt="{{ $catalogStore['name'] ?? 'Textile Bytes' }} hero 1">
             </picture>
           </div>
         </div>
@@ -26,7 +26,7 @@
           <div class="kb-hero-slide kb-ratio-hero">
             <picture>
               <source media="(max-width: 576px)" srcset="{{ asset('assets/hero/mobile/13.webp') }}">
-              <img class="kb-hero-image" src="{{ asset('assets/hero/2.webp') }}" alt="{{ $catalogStore['name'] ?? 'Toronto Textile' }} hero 2">
+              <img class="kb-hero-image" src="{{ asset('assets/hero/2.webp') }}" alt="{{ $catalogStore['name'] ?? 'Textile Bytes' }} hero 2">
             </picture>
           </div>
         </div>
@@ -34,7 +34,7 @@
           <div class="kb-hero-slide kb-ratio-hero">
             <picture>
               <source media="(max-width: 576px)" srcset="{{ asset('assets/hero/mobile/14.webp') }}">
-              <img class="kb-hero-image" src="{{ asset('assets/hero/3.webp') }}" alt="{{ $catalogStore['name'] ?? 'Toronto Textile' }} hero 3">
+              <img class="kb-hero-image" src="{{ asset('assets/hero/3.webp') }}" alt="{{ $catalogStore['name'] ?? 'Textile Bytes' }} hero 3">
             </picture>
           </div>
         </div>

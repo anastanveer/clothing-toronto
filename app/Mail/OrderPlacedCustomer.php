@@ -23,7 +23,7 @@ class OrderPlacedCustomer extends Mailable
             ->view('emails.orders.placed-customer')
             ->with([
                 'title' => 'Order confirmed',
-                'subtitle' => 'Thanks for shopping ' . (config('catalog.store.name') ?? 'Toronto Textile') . '.',
+                'subtitle' => 'Thanks for shopping ' . (config('catalog.store.name') ?? 'Textile Bytes') . '.',
                 'preheader' => 'We received your order ' . $this->order->order_number . '.',
                 'statusLabel' => Str::headline($this->order->status),
             ]);

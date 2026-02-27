@@ -17,9 +17,9 @@
           @if ($showKhanabadoshLogo)
             <img src="{{ asset('assets/brand/logo.avif') }}" alt="Khanabadosh logo">
           @else
-            <span class="kb-logo-text" aria-label="Toronto Textile">
-              <span class="kb-logo-word">Toronto</span>
-              <span class="kb-logo-word kb-logo-word--accent">Textile</span>
+            <span class="kb-logo-text" aria-label="Textile Bytes">
+              <span class="kb-logo-word">Textile</span>
+              <span class="kb-logo-word kb-logo-word--accent">Bytes</span>
             </span>
           @endif
         </a>
